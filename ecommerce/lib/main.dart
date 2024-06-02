@@ -4,6 +4,7 @@ import 'package:ecommerce/ui/homepage/search_page.dart';
 // import 'package:ecommerce/login_page.dart';
 import 'package:ecommerce/ui/authpage/register.dart';
 import 'package:ecommerce/ui/authpage/login.dart';
+import 'package:ecommerce/ui/produkdetail/produkdetail_page.dart';
 import 'package:flutter/material.dart';
 
 void main() {
@@ -23,7 +24,8 @@ class MyApp extends StatelessWidget {
         '/': (context) => LoginPage(),
         '/register': (context) => RegisterPage(),
         '/searchpage': (context) => SearchPage(),
-        '/Isi_Pulsa': (context) => IsipulsaPage()
+        '/Isi_Pulsa': (context) => IsipulsaPage(),
+        '/produkdetail': (context) => ProdukDetail()
       },
     );
   }

@@ -33,7 +33,7 @@ class _RegisterPageState extends State<RegisterPage> {
     });
 
     try {
-      String url = 'http://192.168.128.30:8000/api/register';
+      String url = 'http://192.168.43.41:8000/api/register';
       final response = await http.post(
         (Uri.parse(url)),
         headers: <String, String>{

@@ -23,7 +23,7 @@ class _HomePageState extends State<HomePage> {
   ];
 
   Future<List<Product>> _getProducts() async {
-    String url = 'http://192.168.128.30:8000/api/home';
+    String url = 'http://192.168.43.41:8000/api/home';
 
     var data = await http.get(
       Uri.parse(url),
@@ -96,19 +96,6 @@ class _HomePageState extends State<HomePage> {
             ),
             onTap: () {},
           )
-        ],
-      ),
-      bottomNavigationBar: NavigationBar(
-        height: 60,
-        backgroundColor: const Color.fromARGB(255, 255, 255, 255),
-        elevation: 0,
-        selectedIndex: 0,
-        destinations: const [
-          NavigationDestination(icon: Icon(Icons.home), label: 'Home'),
-          NavigationDestination(
-              icon: Icon(Icons.notifications), label: 'Notifikasi'),
-          NavigationDestination(
-              icon: Icon(Icons.account_circle), label: 'Profil'),
         ],
       ),
       body: FutureBuilder(
@@ -265,7 +252,10 @@ class _HomePageState extends State<HomePage> {
                                                   symbol: 'Rp ')
                                               .format(product.price);
                                       return GestureDetector(
-                                        onTap: () {},
+                                        onTap: () {
+                                          Navigator.pushNamed(
+                                              context, '/produkdetail');
+                                        },
                                         child: Container(
                                           width: 180,
                                           padding: const EdgeInsets.all(1),
@@ -293,7 +283,7 @@ class _HomePageState extends State<HomePage> {
                                                 child: Stack(
                                                   children: [
                                                     Image.network(
-                                                      'http://192.168.128.30:8000${product.imageUrl}',
+                                                      'http://192.168.43.41:8000${product.imageUrl}',
                                                       fit: BoxFit.cover,
                                                       errorBuilder: (context,
                                                           error, stackTrace) {

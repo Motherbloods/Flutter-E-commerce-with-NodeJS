@@ -23,7 +23,7 @@ class _HomePageState extends State<HomePage> {
   ];
 
   Future<List<Product>> _getProducts() async {
-    String url = 'http://192.168.128.30:8000/api/home';
+    String url = 'http://192.168.43.41:8000/api/home';
 
     var data = await http.get(
       Uri.parse(url),
@@ -241,7 +241,8 @@ class _HomePageState extends State<HomePage> {
                                           context,
                                           MaterialPageRoute(
                                               builder: (context) =>
-                                                  AllProdukRecomendations()),
+                                                  AllProdukRecomendations(
+                                                      token: widget.token)),
                                         );
                                       },
                                       child: Text(

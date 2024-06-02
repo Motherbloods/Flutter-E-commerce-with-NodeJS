@@ -23,7 +23,7 @@ class _AllProdukRecomendationsState extends State<AllProdukRecomendations> {
   ];
 
   Future<List<Product>> _getProducts() async {
-    String url = 'http://192.168.128.30:8000/api/home';
+    String url = 'http://192.168.43.41:8000/api/home';
 
     var data = await http.get(
       Uri.parse(url),
@@ -137,7 +137,7 @@ class _AllProdukRecomendationsState extends State<AllProdukRecomendations> {
                                                 child: Stack(
                                                   children: [
                                                     Image.network(
-                                                      'http://192.168.128.30:8000${product.imageUrl}',
+                                                      'http://192.168.43.41:8000${product.imageUrl}',
                                                       fit: BoxFit.cover,
                                                       errorBuilder: (context,
                                                           error, stackTrace) {
