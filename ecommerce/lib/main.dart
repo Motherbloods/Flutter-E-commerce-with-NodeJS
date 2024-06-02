@@ -1,13 +1,14 @@
-import 'package:ecommerce/ui/homepage/home_page.dart';
 import 'package:ecommerce/ui/homepage/isipulsa_page.dart';
 import 'package:ecommerce/ui/homepage/search_page.dart';
-// import 'package:ecommerce/login_page.dart';
 import 'package:ecommerce/ui/authpage/register.dart';
 import 'package:ecommerce/ui/authpage/login.dart';
 import 'package:ecommerce/ui/produkdetail/produkdetail_page.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized(); // Tambahkan ini
+  await dotenv.load(fileName: 'assets/.env');
   runApp(const MyApp());
 }
 

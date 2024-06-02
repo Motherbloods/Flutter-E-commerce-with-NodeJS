@@ -1,10 +1,13 @@
 import 'package:ecommerce/models/product.dart';
+
+import 'package:ecommerce/module/product_grid.dart';
 import 'package:ecommerce/ui/homepage/product_recomen.dart';
+import 'package:ecommerce/ui/homepage/search_page.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'package:intl/intl.dart';
 
 class HomePage extends StatefulWidget {
   final String? token;
@@ -61,7 +64,10 @@ class _HomePageState extends State<HomePage> {
         elevation: 0,
         title: InkWell(
           onTap: () {
-            Navigator.pushNamed(context, '/searchpage');
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => SearchPage()),
+            );
           },
           child: Container(
             height: 35,
@@ -230,177 +236,7 @@ class _HomePageState extends State<HomePage> {
                                     ),
                                   ],
                                 ),
-                                GridView.builder(
-                                    itemCount: 10,
-                                    shrinkWrap: true,
-                                    padding: EdgeInsets.zero,
-                                    physics:
-                                        const NeverScrollableScrollPhysics(),
-                                    gridDelegate:
-                                        const SliverGridDelegateWithFixedCrossAxisCount(
-                                      crossAxisCount: 2,
-                                      mainAxisSpacing: 16,
-                                      crossAxisSpacing: 16,
-                                      mainAxisExtent: 288,
-                                    ),
-                                    itemBuilder: (context, index) {
-                                      Product product = products[index];
-                                      String formatedPrice =
-                                          NumberFormat.currency(
-                                                  locale: 'id_ID',
-                                                  decimalDigits: 0,
-                                                  symbol: 'Rp ')
-                                              .format(product.price);
-                                      return GestureDetector(
-                                        onTap: () {
-                                          Navigator.pushNamed(
-                                              context, '/produkdetail');
-                                        },
-                                        child: Container(
-                                          width: 180,
-                                          padding: const EdgeInsets.all(1),
-                                          decoration: BoxDecoration(
-                                              boxShadow: [
-                                                BoxShadow(
-                                                  color: Colors.grey
-                                                      .withOpacity(0.1),
-                                                  blurRadius: 50,
-                                                  spreadRadius: 7,
-                                                  offset: const Offset(0, 2),
-                                                )
-                                              ],
-                                              borderRadius:
-                                                  BorderRadius.circular(16),
-                                              color: Colors.white),
-                                          child: Column(
-                                            children: [
-                                              //gambar
-                                              Container(
-                                                height: 180,
-                                                padding:
-                                                    const EdgeInsets.all(8.0),
-                                                color: Colors.white,
-                                                child: Stack(
-                                                  children: [
-                                                    Image.network(
-                                                      'http://192.168.43.41:8000${product.imageUrl}',
-                                                      fit: BoxFit.cover,
-                                                      errorBuilder: (context,
-                                                          error, stackTrace) {
-                                                        return Center(
-                                                          child: Text(
-                                                            'Failed to load image',
-                                                            style: TextStyle(
-                                                                color:
-                                                                    Colors.red),
-                                                          ),
-                                                        );
-                                                      },
-                                                      loadingBuilder: (context,
-                                                          child,
-                                                          loadingProgress) {
-                                                        if (loadingProgress ==
-                                                            null) return child;
-                                                        return Center(
-                                                          child:
-                                                              CircularProgressIndicator(),
-                                                        );
-                                                      },
-                                                    ),
-                                                    Positioned(
-                                                      top: 8,
-                                                      child: Container(
-                                                        decoration: BoxDecoration(
-                                                            borderRadius:
-                                                                BorderRadius
-                                                                    .circular(
-                                                                        8),
-                                                            color:
-                                                                Colors.amber),
-                                                        padding:
-                                                            const EdgeInsets
-                                                                .symmetric(
-                                                                horizontal: 8,
-                                                                vertical: 4),
-                                                        child: const Text(
-                                                          '25%',
-                                                          style: TextStyle(
-                                                              color:
-                                                                  Colors.black),
-                                                        ),
-                                                      ),
-                                                    ),
-                                                  ],
-                                                ),
-                                              ),
-                                              //detail
-                                              Padding(
-                                                padding: EdgeInsets.all(8.0),
-                                                child: Column(
-                                                  crossAxisAlignment:
-                                                      CrossAxisAlignment.start,
-                                                  children: [
-                                                    Text(
-                                                      '${product.name}',
-                                                      style: TextStyle(
-                                                        color: Colors.black,
-                                                        fontSize: 16,
-                                                        fontWeight:
-                                                            FontWeight.bold,
-                                                      ),
-                                                    ),
-                                                    Row(
-                                                      children: [
-                                                        Text(
-                                                          '${product.sellerName}',
-                                                          style: TextStyle(
-                                                              color:
-                                                                  Colors.grey,
-                                                              fontSize: 14),
-                                                        ),
-                                                        SizedBox(
-                                                          width: 4,
-                                                        ),
-                                                        Icon(
-                                                          Icons.verified,
-                                                          color: Colors.blue,
-                                                          size: 14,
-                                                        )
-                                                      ],
-                                                    ),
-                                                    SizedBox(height: 4),
-                                                    Row(
-                                                      mainAxisAlignment:
-                                                          MainAxisAlignment
-                                                              .spaceBetween,
-                                                      children: [
-                                                        Align(
-                                                          alignment: Alignment
-                                                              .centerLeft,
-                                                          child: Text(
-                                                            '${formatedPrice}',
-                                                            style: TextStyle(
-                                                              color:
-                                                                  Colors.black,
-                                                              fontSize: 16,
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .bold,
-                                                            ),
-                                                          ),
-                                                        ),
-                                                        Text(
-                                                            '${product.totalUnitsSold} terjual')
-                                                      ],
-                                                    ),
-                                                  ],
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                      );
-                                    }),
+                                ProductGrid(products: products)
                               ],
                             ),
                           ),
