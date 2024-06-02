@@ -22,7 +22,6 @@ class _AllProdukRecomendationsState extends State<AllProdukRecomendations> {
   bool _isLoading = false;
   int _page = 1;
   final int _limit = 10;
-
   @override
   void initState() {
     super.initState();
@@ -60,7 +59,6 @@ class _AllProdukRecomendationsState extends State<AllProdukRecomendations> {
   Future<List<Product>> _getProducts(
       {required int page, required int limit}) async {
     String url = 'http://192.168.128.30:8000/api/home?page=$page&limit=$limit';
-
     var response = await http.get(
       Uri.parse(url),
       headers: <String, String>{

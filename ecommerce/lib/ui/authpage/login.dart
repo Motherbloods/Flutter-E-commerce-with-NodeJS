@@ -32,7 +32,7 @@ class _LoginPageState extends State<LoginPage> {
     });
 
     try {
-      String url = 'http://192.168.128.30:8000/api/login';
+      String url = 'http://192.168.43.41:8000/api/login';
       final response = await http.post(
         (Uri.parse(url)),
         headers: <String, String>{

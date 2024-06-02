@@ -26,7 +26,7 @@ class _HomePageState extends State<HomePage> {
   ];
 
   Future<List<Product>> _getProducts() async {
-    String url = 'http://192.168.128.30:8000/api/home';
+    String url = 'http://192.168.43.41:8000/api/home';
 
     var data = await http.get(
       Uri.parse(url),
@@ -102,19 +102,6 @@ class _HomePageState extends State<HomePage> {
             ),
             onTap: () {},
           )
-        ],
-      ),
-      bottomNavigationBar: NavigationBar(
-        height: 60,
-        backgroundColor: const Color.fromARGB(255, 255, 255, 255),
-        elevation: 0,
-        selectedIndex: 0,
-        destinations: const [
-          NavigationDestination(icon: Icon(Icons.home), label: 'Home'),
-          NavigationDestination(
-              icon: Icon(Icons.notifications), label: 'Notifikasi'),
-          NavigationDestination(
-              icon: Icon(Icons.account_circle), label: 'Profil'),
         ],
       ),
       body: FutureBuilder(

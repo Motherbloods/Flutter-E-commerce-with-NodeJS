@@ -2,6 +2,7 @@ import 'package:ecommerce/ui/homepage/isipulsa_page.dart';
 import 'package:ecommerce/ui/homepage/search_page.dart';
 import 'package:ecommerce/ui/authpage/register.dart';
 import 'package:ecommerce/ui/authpage/login.dart';
+import 'package:ecommerce/ui/produkdetail/produkdetail_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
@@ -21,10 +22,11 @@ class MyApp extends StatelessWidget {
       title: 'E-commerce',
       initialRoute: '/',
       routes: {
-        '/': (context) => const LoginPage(),
-        '/register': (context) => const RegisterPage(),
-        '/searchpage': (context) => const SearchPage(),
-        '/Isi_Pulsa': (context) => const IsipulsaPage(),
+        '/': (context) => LoginPage(),
+        '/register': (context) => RegisterPage(),
+        '/searchpage': (context) => SearchPage(),
+        '/Isi_Pulsa': (context) => IsipulsaPage(),
+        '/produkdetail': (context) => ProdukDetail()
       },
     );
   }
