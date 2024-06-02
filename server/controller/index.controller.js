@@ -1,13 +1,19 @@
 const Products = require("../models/product");
 const Users = require("../models/user");
 const Sellers = require("../models/seller");
+const SearchHistory = require("../models/searchhistory");
 
 require("dotenv").config();
 
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 const redis = require("redis");
-const redisClient = redis.createClient();
+const searchSuggest = require("../models/searchSugges");
+const client = redis.createClient();
+// Tambahkan event listener untuk menangani error koneksi Redis
+// client.on("error", (err) => {
+//   console.error("Redis error:", err);
+// });
 
 const register = async (req, res) => {
   try {
@@ -78,16 +84,18 @@ const login = async (req, res) => {
     user.token = token;
     await user.save();
 
-    return res.status(200).send({ success: true, token });
+    return res.status(200).send({ success: true, token, id: user._id });
   } catch (err) {
     console.error("ini error", err);
     return res.status(500).send("Internal Server Error");
   }
 };
+
 const getRecomendations = async (req, res) => {
   try {
-    const { id, email, recomendations } = req.user;
-    console.log("Recomendations", req.user, recomendations);
+    const { _id, email, recomendations } = req.user;
+    const cacheKey = `recommendations:${_id}`;
+
     const totalProductsCount = await Products.countDocuments();
 
     if (!recomendations || recomendations.length === 0) {
@@ -113,7 +121,7 @@ const getRecomendations = async (req, res) => {
       );
       return res.status(200).json(productAdditionalWithSellerName);
     }
-    console.log("haloo");
+
     let additionalProducts = await Products.find()
       .sort({ salesLastWeek: -1 })
       .limit(totalProductsCount);
@@ -121,11 +129,13 @@ const getRecomendations = async (req, res) => {
     const products = await Products.find({
       category: { $in: recomendations },
     });
+
     const sellerIds = products.map((product) => product.sellerId);
     const sellers = await Sellers.find({ _id: { $in: sellerIds } });
     const sellerIdsAdditionalIds = additionalProducts.map(
       (product) => product.sellerId
     );
+
     const sellersAdditional = await Sellers.find({
       _id: { $in: sellerIdsAdditionalIds },
     });
@@ -168,14 +178,12 @@ const getRecomendations = async (req, res) => {
       ...productsWithSellerName,
       ...productAdditionalWithSellerName,
     ];
-    console.log(";;shdfs");
-    console.log(allProducts);
     if (products.length === 0) {
       return res
         .status(404)
         .json({ message: "No products found for the given recomendations." });
     }
-
+    client.setex(cacheKey, 3600, JSON.stringify(allProducts));
     return res.status(200).json(allProducts);
   } catch (err) {
     console.error(err);
@@ -188,7 +196,7 @@ const getDetailProduk = async (req, res) => {
     const id = req.params.id;
     const cacheKey = `product:${id}`;
 
-    redisClient.get(cacheKey, async (err, cachedData) => {
+    client.get(cacheKey, async (err, cachedData) => {
       if (err) throw err;
 
       if (cachedData) {
@@ -207,7 +215,7 @@ const getDetailProduk = async (req, res) => {
         throw err;
       }
       const data = { product, nameOfSeller: nameOfSeller.namaToko };
-      redisClient.set(cacheKey, JSON.stringify(data));
+      client.set(cacheKey, JSON.stringify(data));
       res.status(200).send({ data });
     });
   } catch (err) {
@@ -225,7 +233,7 @@ const getSellerHome = async (req, res) => {
       return res.status(404).send("seller not found");
     }
 
-    const product = await Products.findMany({ sellerId: seller._id });
+    const product = await Products.find({ sellerId: seller._id });
     if (!product) {
       return res.status(404).send("Product not found");
     }
@@ -289,6 +297,62 @@ const checkOut = async (req, res) => {
   }
 };
 
+const getSuggest = async (req, res) => {
+  try {
+    const submit = req.query.submit;
+    const query = req.query.q || "";
+    const user = req.query.user;
+
+    let response = [];
+
+    if (!query) {
+      const historySuggest = await SearchHistory.find({ userId: user });
+      response = historySuggest;
+    } else {
+      // Menggunakan regex untuk case-insensitive dan partial match
+      const suggest = await searchSuggest
+        .find({
+          suggest: { $regex: query, $options: "i" },
+        })
+        .sort({ jmlDicari: -1 }) // Mengurutkan berdasarkan jmlDicari tertinggi
+        .limit(5); // Membatasi hasil ke 5 dokumen
+
+      if (submit) {
+        const products = await Products.find({
+          name: { $regex: query, $options: "i" },
+        });
+
+        const sellerIds = products.map((product) => product.sellerId);
+        const sellers = await Sellers.find({ _id: { $in: sellerIds } });
+
+        const productsWithSellerName = products.map((product) => {
+          const seller = sellers.find(
+            (seller) => seller._id.toString() === product.sellerId.toString()
+          );
+
+          return {
+            ...product.toObject(),
+            sellerName: seller ? seller.namaToko : "Unknown Seller",
+          };
+        });
+
+        response = productsWithSellerName;
+      } else {
+        response = suggest;
+      }
+    }
+
+    res.status(200).json(response);
+  } catch (error) {
+    console.error(error);
+    res
+      .status(500)
+      .json({ error: "An error occurred while fetching suggestions" });
+  }
+};
+
+module.exports = { getSuggest };
+
 const pembayaran = async (req, res) => {};
 
 module.exports = {
@@ -299,4 +363,5 @@ module.exports = {
   getDetailProduk,
   getSellerHome,
   searchWithPicture,
+  getSuggest,
 };

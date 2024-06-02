@@ -6,6 +6,7 @@ import 'dart:convert';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'dart:async';
 import 'package:ecommerce/ui/authpage/register.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -45,6 +46,11 @@ class _LoginPageState extends State<LoginPage> {
       if (response.statusCode == 200) {
         final responseData = jsonDecode(response.body);
         final token = responseData['token'];
+        final userId = responseData['id'];
+
+        SharedPreferences prefs = await SharedPreferences.getInstance();
+        await prefs.setString('userId', userId);
+
         _message = 'Login successful';
 
         Timer(Duration(milliseconds: 15), () {
