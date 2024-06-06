@@ -1,15 +1,21 @@
+import 'package:ecommerce/models/product.dart';
+import 'package:ecommerce/models/seller.dart';
 import 'package:ecommerce/ui/produkdetail/deskripsi.dart';
 import 'package:ecommerce/ui/produkdetail/reviews.dart';
+import 'package:ecommerce/utils/api/get_seller.dart';
+import 'package:ecommerce/utils/blade/product_grid.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
-class ProdukDetail extends StatefulWidget {
-  const ProdukDetail({Key? key}) : super(key: key);
+class ProductDetailPage extends StatefulWidget {
+  final Product product;
+  ProductDetailPage({required this.product});
 
   @override
-  State<ProdukDetail> createState() => _ProdukDetailState();
+  State<ProductDetailPage> createState() => _ProductDetailPageState();
 }
 
-class _ProdukDetailState extends State<ProdukDetail> {
+class _ProductDetailPageState extends State<ProductDetailPage> {
   int currentImage = 0;
   int _selectedTabIndex = 0;
   final List<String> images = [
@@ -20,6 +26,12 @@ class _ProdukDetailState extends State<ProdukDetail> {
 
   @override
   Widget build(BuildContext context) {
+    final formattedPrice = NumberFormat.currency(
+      locale: 'id_ID',
+      decimalDigits: 0,
+      symbol: 'Rp ',
+    ).format(widget.product.price);
+
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -47,7 +59,7 @@ class _ProdukDetailState extends State<ProdukDetail> {
               SizedBox(
                 height: 250,
                 child: PageView.builder(
-                  itemCount: images.length,
+                  itemCount: 1,
                   onPageChanged: (int index) {
                     setState(() {
                       currentImage = index;
@@ -56,7 +68,8 @@ class _ProdukDetailState extends State<ProdukDetail> {
                   itemBuilder: (context, index) {
                     return Hero(
                       tag: images[index],
-                      child: Image.network(images[index]),
+                      child: Image.network(
+                          'http://192.168.128.30:8000${widget.product.imageUrl}'),
                     );
                   },
                 ),
@@ -106,8 +119,8 @@ class _ProdukDetailState extends State<ProdukDetail> {
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
-                          'Nama produk',
+                        Text(
+                          '${widget.product.name}',
                           style: TextStyle(
                             fontWeight: FontWeight.w800,
                             fontSize: 25,
@@ -118,8 +131,8 @@ class _ProdukDetailState extends State<ProdukDetail> {
                             Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                const Text(
-                                  'Rp 350.000',
+                                Text(
+                                  '${formattedPrice}',
                                   style: TextStyle(
                                     fontWeight: FontWeight.w800,
                                     fontSize: 25,
@@ -173,7 +186,7 @@ class _ProdukDetailState extends State<ProdukDetail> {
                               ],
                             ),
                             const Spacer(),
-                            const Text.rich(
+                            Text.rich(
                               TextSpan(
                                 children: [
                                   TextSpan(
@@ -181,7 +194,7 @@ class _ProdukDetailState extends State<ProdukDetail> {
                                     style: TextStyle(fontSize: 16),
                                   ),
                                   TextSpan(
-                                    text: 'Toko',
+                                    text: '${widget.product.sellerName}',
                                     style: TextStyle(
                                         fontSize: 16,
                                         fontWeight: FontWeight.bold),
@@ -258,13 +271,72 @@ class _ProdukDetailState extends State<ProdukDetail> {
                             ),
                           ],
                         ),
-                        const SizedBox(height: 20),
-                        _selectedTabIndex == 0 ? Deskripsi() : Reviews()
+                        SizedBox(height: 20),
+                        _selectedTabIndex == 0
+                            ? Deskripsi()
+                            : Reviews(
+                                reviews: widget.product.reviews,
+                              )
                       ],
+                    ),
+                    Text('Produk Lain Dari Toko Ini'),
+                    FutureBuilder<Map<String, dynamic>>(
+                      future: getSeller(widget.product.sellerId!),
+                      builder: (BuildContext context,
+                          AsyncSnapshot<Map<String, dynamic>> snapshot) {
+                        if (snapshot.connectionState ==
+                            ConnectionState.waiting) {
+                          return Center(
+                            child: CircularProgressIndicator(),
+                          );
+                        } else if (snapshot.hasError) {
+                          return Center(
+                            child: Text('Error: ${snapshot.error}'),
+                          );
+                        } else if (!snapshot.hasData) {
+                          return Center(
+                            child: Text('No Seller available'),
+                          );
+                        } else {
+                          Map<String, dynamic> data = snapshot.data!;
+                          Seller seller = Seller.fromJson(data['seller']);
+                          List<dynamic> dataProduct = snapshot.data!['product'];
+                          List<Product> products = dataProduct
+                              .map((item) => Product.fromJson(item))
+                              .toList();
+
+                          return Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const SizedBox(height: 4),
+                                Padding(
+                                  padding: EdgeInsets.all(8.0),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: const [
+                                      Text(
+                                        'Produk',
+                                        style: TextStyle(
+                                            color: Colors.black,
+                                            fontSize: 21,
+                                            fontWeight: FontWeight.bold),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                ProductGrid(seller: seller, products: products)
+                              ],
+                            ),
+                          );
+                        }
+                      },
                     ),
                   ],
                 ),
-              )
+              ),
             ],
           ),
         ),

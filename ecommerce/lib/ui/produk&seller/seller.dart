@@ -1,12 +1,8 @@
+import 'package:ecommerce/utils/api/get_seller.dart';
 import 'package:ecommerce/models/product.dart';
 import 'package:ecommerce/models/seller.dart';
-import 'package:ecommerce/ui/produk&seller/produkDetail.dart';
-import 'package:ecommerce/module/product_grid.dart';
+import 'package:ecommerce/utils/blade/product_grid.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
-import 'package:intl/intl.dart';
 
 class SellerPage extends StatefulWidget {
   final String sellerId;
@@ -18,19 +14,6 @@ class SellerPage extends StatefulWidget {
 }
 
 class _SellerPageState extends State<SellerPage> {
-  Future<Map<String, dynamic>> _getSeller() async {
-    final url = dotenv.env['URL'] ?? '';
-    var response =
-        await http.get(Uri.parse('$url/api/seller/${widget.sellerId}'));
-    print(response.body);
-    if (response.statusCode == 200) {
-      var jsonData = json.decode(response.body);
-      return jsonData['data'];
-    } else {
-      throw Exception('Failed to load seller');
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -38,7 +21,7 @@ class _SellerPageState extends State<SellerPage> {
         title: Text('Seller'),
       ),
       body: FutureBuilder<Map<String, dynamic>>(
-        future: _getSeller(),
+        future: getSeller(widget.sellerId),
         builder: (BuildContext context,
             AsyncSnapshot<Map<String, dynamic>> snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {

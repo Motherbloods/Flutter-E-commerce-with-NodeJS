@@ -1,11 +1,11 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import 'package:iri/config.dart';
-import 'package:iri/models/login_request_model.dart';
-import 'package:iri/models/login_response_model.dart';
-import 'package:iri/models/register_request_model.dart';
-import 'package:iri/models/register_response_model.dart';
-import 'package:iri/service/shared_service.dart';
+import 'package:ecommerce/irfan/config.dart';
+import 'package:ecommerce/irfan/models/login_request_model.dart';
+import 'package:ecommerce/irfan/models/login_response_model.dart';
+import 'package:ecommerce/irfan/models/register_request_model.dart';
+import 'package:ecommerce/irfan/models/register_response_model.dart';
+import 'package:ecommerce/irfan/service/shared_service.dart';
 
 class ApiService {
   static var client = http.Client();

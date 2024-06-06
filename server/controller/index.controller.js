@@ -2,6 +2,7 @@ const Products = require("../models/product");
 const Users = require("../models/user");
 const Sellers = require("../models/seller");
 const SearchHistory = require("../models/searchhistory");
+const Review = require("../models/ulasan");
 
 require("dotenv").config();
 
@@ -95,13 +96,21 @@ const getRecomendations = async (req, res) => {
   try {
     const { _id, email, recomendations } = req.user;
     const cacheKey = `recommendations:${_id}`;
-
     const totalProductsCount = await Products.countDocuments();
 
     if (!recomendations || recomendations.length === 0) {
       let additionalProducts = await Products.find()
         .sort({ salesLastWeek: -1 })
         .limit(totalProductsCount);
+
+      const additionalProductIds = additionalProducts.map(
+        (product) => product._id
+      );
+
+      const reviewsProductAdditional = await Review.find({
+        productId: { $in: additionalProductIds },
+      });
+
       const sellerIdsAdditionalIds = additionalProducts.map(
         (product) => product.sellerId
       );
@@ -113,9 +122,17 @@ const getRecomendations = async (req, res) => {
           const seller = sellersAdditional.find((seller) => {
             return seller._id.toString() === product.sellerId.toString();
           });
+
+          const productReviews = reviewsProductAdditional
+            .filter((review) => {
+              return review.productId.toString() === product._id.toString();
+            })
+            .map((review) => review.toObject());
+
           return {
             ...product.toObject(),
             sellerName: seller ? seller.namaToko : "Unknown",
+            reviews: productReviews,
           };
         }
       );
@@ -128,6 +145,13 @@ const getRecomendations = async (req, res) => {
 
     const products = await Products.find({
       category: { $in: recomendations },
+    });
+
+    const reviewsProduct = await Review.find({
+      productId: { $in: products._id },
+    });
+    const reviewsProductAdditional = await Review.find({
+      productId: { $in: additionalProducts._id },
     });
 
     const sellerIds = products.map((product) => product.sellerId);
@@ -156,6 +180,7 @@ const getRecomendations = async (req, res) => {
         return {
           ...product.toObject(),
           sellerName: seller ? seller.namaToko : "Unknown",
+          reviews: reviewsProductAdditional.map((review) => review.toObject()),
         };
       }
     );
@@ -168,6 +193,7 @@ const getRecomendations = async (req, res) => {
       return {
         ...product.toObject(),
         sellerName: seller ? seller.namaToko : "Unknown Seller",
+        reviews: reviewsProduct.map((review) => review.toObject()),
       };
     });
 
@@ -299,47 +325,28 @@ const checkOut = async (req, res) => {
 
 const getSuggest = async (req, res) => {
   try {
-    const submit = req.query.submit;
-    const query = req.query.q || "";
-    const user = req.query.user;
-
+    const selectId = req.query.selectId;
+    let query = req.query.q;
+    const user = req.query.userId;
     let response = [];
 
-    if (!query) {
-      const historySuggest = await SearchHistory.find({ userId: user });
+    query = query?.trim();
+
+    if (user) {
+      const historySuggest = await SearchHistory.find({
+        userId: { $regex: user, $options: "i" },
+      })
+        .sort({ date: -1 }) // Mengurutkan berdasarkan jmlDicari tertinggi
+        .limit(5);
       response = historySuggest;
-    } else {
-      // Menggunakan regex untuk case-insensitive dan partial match
+    } else if (query && !user) {
       const suggest = await searchSuggest
         .find({
           suggest: { $regex: query, $options: "i" },
         })
         .sort({ jmlDicari: -1 }) // Mengurutkan berdasarkan jmlDicari tertinggi
         .limit(5); // Membatasi hasil ke 5 dokumen
-
-      if (submit) {
-        const products = await Products.find({
-          name: { $regex: query, $options: "i" },
-        });
-
-        const sellerIds = products.map((product) => product.sellerId);
-        const sellers = await Sellers.find({ _id: { $in: sellerIds } });
-
-        const productsWithSellerName = products.map((product) => {
-          const seller = sellers.find(
-            (seller) => seller._id.toString() === product.sellerId.toString()
-          );
-
-          return {
-            ...product.toObject(),
-            sellerName: seller ? seller.namaToko : "Unknown Seller",
-          };
-        });
-
-        response = productsWithSellerName;
-      } else {
-        response = suggest;
-      }
+      response = suggest;
     }
 
     res.status(200).json(response);
@@ -351,7 +358,56 @@ const getSuggest = async (req, res) => {
   }
 };
 
-module.exports = { getSuggest };
+const getProductSearch = async (req, res) => {
+  try {
+    let query = req.query.q;
+    query = query?.trim();
+    if (query && query.length > 0) {
+      const userId = req.query.userId;
+
+      const history = await SearchHistory.findOne({
+        userId: userId,
+        searchValue: query,
+      });
+      if (history) {
+        history.date = new Date(); // Mengatur tanggal dan waktu saat ini
+        await history.save(); // Menyimpan perubahan
+      } else {
+        const addHistorySearch = new SearchHistory({
+          searchValue: query,
+          userId: userId,
+          date: new Date(),
+        });
+        await addHistorySearch.save();
+      }
+      const products = await Products.find({
+        name: { $regex: query, $options: "i" },
+      });
+
+      const sellerIds = products.map((product) => product.sellerId);
+      const sellers = await Sellers.find({ _id: { $in: sellerIds } });
+
+      const productsWithSellerName = products.map((product) => {
+        const seller = sellers.find(
+          (seller) => seller._id.toString() === product.sellerId.toString()
+        );
+        return {
+          ...product.toObject(),
+          sellerName: seller ? seller.namaToko : "Unknown Seller",
+        };
+      });
+
+      res.status(200).json(productsWithSellerName);
+    } else {
+      res.status(200).json([]);
+    }
+  } catch (error) {
+    console.error(error);
+    res
+      .status(500)
+      .json({ error: "An error occurred while fetching products" });
+  }
+};
 
 const pembayaran = async (req, res) => {};
 
@@ -364,4 +420,5 @@ module.exports = {
   getSellerHome,
   searchWithPicture,
   getSuggest,
+  getProductSearch,
 };

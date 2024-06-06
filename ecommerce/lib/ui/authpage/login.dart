@@ -1,6 +1,7 @@
-import 'package:ecommerce/ui/homepage/home_page.dart';
+import 'package:ecommerce/home_page copy.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
@@ -32,7 +33,9 @@ class _LoginPageState extends State<LoginPage> {
     });
 
     try {
-      String url = 'http://192.168.43.41:8000/api/login';
+      final api = dotenv.env['URL'] ?? '';
+      String url = '${api}/api/login';
+
       final response = await http.post(
         (Uri.parse(url)),
         headers: <String, String>{
