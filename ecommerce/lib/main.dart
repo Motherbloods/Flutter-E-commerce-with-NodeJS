@@ -1,5 +1,5 @@
 import 'package:ecommerce/ui/homepage/isipulsa_page.dart';
-import 'package:ecommerce/ui/homepage/search_page.dart';
+import 'package:ecommerce/ui/produk&seller/search_page.dart';
 import 'package:ecommerce/ui/authpage/register.dart';
 import 'package:ecommerce/ui/authpage/login.dart';
 import 'package:ecommerce/ui/produkdetail/produkdetail_page.dart';
@@ -24,9 +24,8 @@ class MyApp extends StatelessWidget {
       routes: {
         '/': (context) => LoginPage(),
         '/register': (context) => RegisterPage(),
-        '/searchpage': (context) => SearchPage(),
         '/Isi_Pulsa': (context) => IsipulsaPage(),
-        '/produkdetail': (context) => ProdukDetail()
+        // '/produkdetail': (context) => ProdukDetail()
       },
     );
   }

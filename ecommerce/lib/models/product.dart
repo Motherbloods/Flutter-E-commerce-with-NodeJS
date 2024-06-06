@@ -1,3 +1,5 @@
+import 'package:ecommerce/models/ulasan.dart';
+
 class Product {
   final String? id;
   final String? name;
@@ -9,6 +11,7 @@ class Product {
   final int? totalUnitsSold;
   final String? sellerName;
   final String? imageUrl;
+  final List<Ulasan>? reviews;
 
   Product(
       {this.id,
@@ -20,6 +23,7 @@ class Product {
       this.salesLastWeek,
       this.totalUnitsSold,
       this.sellerName,
+      this.reviews,
       this.imageUrl});
 
   factory Product.fromJson(Map<String, dynamic> json) {
@@ -35,6 +39,12 @@ class Product {
       salesLastWeek: json['salesLastWeek'],
       sellerName: json['sellerName'],
       imageUrl: json['imageUrl'],
+      reviews: json['reviews'] != null
+          ? (json['reviews'] as List<dynamic>)
+              .map((reviewJson) =>
+                  Ulasan.fromJson(reviewJson as Map<String, dynamic>))
+              .toList()
+          : null,
     );
   }
 }

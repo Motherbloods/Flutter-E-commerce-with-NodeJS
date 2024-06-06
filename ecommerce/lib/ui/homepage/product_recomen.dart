@@ -1,11 +1,9 @@
 import 'package:ecommerce/models/product.dart';
-import 'package:ecommerce/module/product_grid.dart';
-import 'package:ecommerce/ui/produk&seller/seller.dart';
+import 'package:ecommerce/utils/blade/product_grid.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'package:intl/intl.dart';
 
 class AllProdukRecomendations extends StatefulWidget {
   final String? token;
@@ -17,8 +15,8 @@ class AllProdukRecomendations extends StatefulWidget {
 }
 
 class _AllProdukRecomendationsState extends State<AllProdukRecomendations> {
-  List<Product> _products = [];
-  ScrollController _scrollController = ScrollController();
+  final List<Product> _products = [];
+  final ScrollController _scrollController = ScrollController();
   bool _isLoading = false;
   int _page = 1;
   final int _limit = 10;
@@ -58,7 +56,9 @@ class _AllProdukRecomendationsState extends State<AllProdukRecomendations> {
 
   Future<List<Product>> _getProducts(
       {required int page, required int limit}) async {
-    String url = 'http://192.168.128.30:8000/api/home?page=$page&limit=$limit';
+    final api = dotenv.env['URL'] ?? '';
+
+    String url = '${api}/api/home?page=$page&limit=$limit';
     var response = await http.get(
       Uri.parse(url),
       headers: <String, String>{

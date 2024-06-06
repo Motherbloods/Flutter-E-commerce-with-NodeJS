@@ -36,6 +36,10 @@ const productsSchema = new mongoose.Schema({
     type: Number,
     required: false,
   },
+  ulasan: {
+    type: String,
+    ref: "Review",
+  },
 });
 
 const Products = mongoose.model("Products", productsSchema);

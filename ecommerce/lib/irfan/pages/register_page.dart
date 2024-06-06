@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter/gestures.dart';
-import 'package:iri/models/register_request_model.dart';
-import 'package:iri/service/api_service.dart';
+import 'package:ecommerce/irfan/models/register_request_model.dart';
+import 'package:ecommerce/irfan/service/api_service.dart';
 import 'package:snippet_coder_utils/FormHelper.dart';
 import 'package:snippet_coder_utils/ProgressHUD.dart';
 import 'package:snippet_coder_utils/hex_color.dart';

@@ -1,11 +1,13 @@
 import 'package:ecommerce/models/product.dart';
+import 'package:ecommerce/utils/blade/navbar_page.dart';
 
-import 'package:ecommerce/module/product_grid.dart';
+import 'package:ecommerce/utils/blade/product_grid.dart';
 import 'package:ecommerce/ui/homepage/product_recomen.dart';
-import 'package:ecommerce/ui/homepage/search_page.dart';
+import 'package:ecommerce/ui/produk&seller/search_page.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
@@ -26,7 +28,8 @@ class _HomePageState extends State<HomePage> {
   ];
 
   Future<List<Product>> _getProducts() async {
-    String url = 'http://192.168.43.41:8000/api/home';
+    final api = dotenv.env['URL'] ?? '';
+    String url = '${api}/api/home';
 
     var data = await http.get(
       Uri.parse(url),
@@ -55,6 +58,7 @@ class _HomePageState extends State<HomePage> {
     Navigator.pushNamed(context, '/$routeName');
   }
 
+  int _selectedIndex = 0;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -103,6 +107,9 @@ class _HomePageState extends State<HomePage> {
             onTap: () {},
           )
         ],
+      ),
+      bottomNavigationBar: NavbarPage(
+        selectedIndex: _selectedIndex,
       ),
       body: FutureBuilder(
         future: _getProducts(),

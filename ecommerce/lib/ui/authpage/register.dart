@@ -1,6 +1,7 @@
 import 'package:ecommerce/ui/authpage/login.dart';
 import 'package:ecommerce/ui/homepage/isipulsa_page.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
@@ -33,7 +34,9 @@ class _RegisterPageState extends State<RegisterPage> {
     });
 
     try {
-      String url = 'http://192.168.43.41:8000/api/register';
+      final api = dotenv.env['URL'] ?? '';
+      String url = '${api}/api/register';
+
       final response = await http.post(
         (Uri.parse(url)),
         headers: <String, String>{

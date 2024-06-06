@@ -1,13 +1,12 @@
 import 'package:ecommerce/models/product.dart';
-
-import 'package:ecommerce/module/product_grid.dart';
+import 'package:ecommerce/utils/blade/navbar_page.dart';
+import 'package:ecommerce/utils/api/get_recomen.dart';
+import 'package:ecommerce/utils/blade/product_grid.dart';
 import 'package:ecommerce/ui/homepage/product_recomen.dart';
-import 'package:ecommerce/ui/homepage/search_page.dart';
+import 'package:ecommerce/ui/produk&seller/search_page.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
 
 class HomePage extends StatefulWidget {
   final String? token;
@@ -25,24 +24,6 @@ class _HomePageState extends State<HomePage> {
     Icons.menu,
   ];
 
-  Future<List<Product>> _getProducts() async {
-    String url = 'http://192.168.43.41:8000/api/home';
-
-    var data = await http.get(
-      Uri.parse(url),
-      headers: <String, String>{
-        'Authorization': 'Bearer ' + widget.token!,
-        'Content-Type': 'application/json',
-      },
-    );
-    var jsonData = json.decode(data.body);
-    List<Product> products = [];
-    for (var item in jsonData) {
-      products.add(Product.fromJson(item));
-    }
-    return products;
-  }
-
   List<String> myIconNames = [
     'Isi Pulsa',
     'Isi Token Listrik',
@@ -55,6 +36,7 @@ class _HomePageState extends State<HomePage> {
     Navigator.pushNamed(context, '/$routeName');
   }
 
+  int _selectedIndex = 0;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -104,21 +86,9 @@ class _HomePageState extends State<HomePage> {
           )
         ],
       ),
-      bottomNavigationBar: NavigationBar(
-        height: 60,
-        backgroundColor: const Color.fromARGB(255, 255, 255, 255),
-        elevation: 0,
-        selectedIndex: 0,
-        destinations: const [
-          NavigationDestination(icon: Icon(Icons.home), label: 'Home'),
-          NavigationDestination(
-              icon: Icon(Icons.notifications), label: 'Notifikasi'),
-          NavigationDestination(
-              icon: Icon(Icons.account_circle), label: 'Profil'),
-        ],
-      ),
+      bottomNavigationBar: NavbarPage(selectedIndex: _selectedIndex),
       body: FutureBuilder(
-        future: _getProducts(),
+        future: getProducts(widget.token!),
         builder: (BuildContext context, AsyncSnapshot snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return Center(
