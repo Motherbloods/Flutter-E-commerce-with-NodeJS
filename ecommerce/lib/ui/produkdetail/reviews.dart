@@ -26,40 +26,90 @@ class _ReviewsState extends State<Reviews> {
               itemBuilder: (context, index) {
                 final review = widget.reviews![index];
                 final url = dotenv.env['URL'] ?? '';
-                return Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(review.review!),
-                                    Text(review.userId!)
-                                  ],
-                                ),
-                              ),
-                              SizedBox(
-                                  width: 10), // Spasi antara teks dan gambar
-                              // Menampilkan gambar untuk setiap URL dalam daftar 'picture'
-                              for (String pictureUrl in review.picture!)
-                                Image.network(
+                // return Row(
+                //   crossAxisAlignment: CrossAxisAlignment.start,
+                //   children: [
+                //     Expanded(
+                //       child: Column(
+                //         crossAxisAlignment: CrossAxisAlignment.start,
+                //         children: [
+                //           Row(
+                //             crossAxisAlignment: CrossAxisAlignment.start,
+                //             children: [
+                //               Expanded(
+                //                 child: Column(
+                //                   crossAxisAlignment: CrossAxisAlignment.start,
+                //                   children: [
+                //                     Text(review.review!),
+                //                     Text(review.userId!)
+                //                   ],
+                //                 ),
+                //               ),
+                //               SizedBox(
+                //                   width: 10), // Spasi antara teks dan gambar
+                //               // Menampilkan gambar untuk setiap URL dalam daftar 'picture'
+                //               for (String pictureUrl in review.picture!)
+                //                 Image.network(
+                //                   '$url$pictureUrl',
+                //                   width: 50,
+                //                   height: 50,
+                //                 ),
+                //             ],
+                //           ),
+                //         ],
+                //       ),
+                //     ),
+                //   ],
+                // );
+                return Card(
+                  margin: EdgeInsets.symmetric(vertical: 8.0),
+                  child: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        //info User, date
+                        Row(
+                          children: [
+                            for (String pictureUrl in review.picture!)
+                              ClipOval(
+                                child: Image.network(
                                   '$url$pictureUrl',
                                   width: 50,
                                   height: 50,
+                                  fit: BoxFit.cover,
                                 ),
-                            ],
+                              ),
+                            SizedBox(width: 10),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  review.userId!,
+                                  style: TextStyle(fontWeight: FontWeight.bold),
+                                ),
+                                Text(
+                                  '8 Juni 2024',
+                                  style: TextStyle(color: Colors.grey),
+                                )
+                              ],
+                            )
+                          ],
+                        ),
+                        //Rating
+                        SizedBox(height: 10),
+                        Row(
+                          children: List.generate(
+                            5,
+                            (index) => Icon(Icons.star, color: Colors.yellow),
                           ),
-                        ],
-                      ),
+                        ),
+                        //Review
+                        SizedBox(height: 10),
+                        Text(review.review!)
+                      ],
                     ),
-                  ],
+                  ),
                 );
               },
             ),
