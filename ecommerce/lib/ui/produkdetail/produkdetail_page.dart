@@ -1,6 +1,7 @@
 import 'package:ecommerce/models/product.dart';
 import 'package:ecommerce/models/seller.dart';
 import 'package:ecommerce/ui/produkdetail/deskripsi.dart';
+import 'package:ecommerce/ui/produkdetail/modal_varian.dart';
 import 'package:ecommerce/ui/produkdetail/reviews.dart';
 import 'package:ecommerce/utils/api/get_seller.dart';
 import 'package:ecommerce/utils/blade/product_grid.dart';
@@ -18,11 +19,13 @@ class ProductDetailPage extends StatefulWidget {
 class _ProductDetailPageState extends State<ProductDetailPage> {
   int currentImage = 0;
   int _selectedTabIndex = 0;
+  int _selectedColorIndex = 0;
   final List<String> images = [
     'https://picsum.photos/id/21/1280/853',
     'https://picsum.photos/id/22/1280/853',
     'https://picsum.photos/id/23/1280/853',
   ];
+  final List<String> colorOptions = ['Red'];
 
   @override
   Widget build(BuildContext context) {
@@ -69,7 +72,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                     return Hero(
                       tag: images[index],
                       child: Image.network(
-                          'http://192.168.128.30:8000${widget.product.imageUrl}'),
+                          'http://192.168.43.41:8000${widget.product.imageUrl}'),
                     );
                   },
                 ),
@@ -279,6 +282,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                               )
                       ],
                     ),
+                    //produk lain
                     Text('Produk Lain Dari Toko Ini'),
                     FutureBuilder<Map<String, dynamic>>(
                       future: getSeller(widget.product.sellerId!),
@@ -339,6 +343,89 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
               ),
             ],
           ),
+        ),
+      ),
+      bottomNavigationBar: BottomAppBar(
+        color: Colors.white,
+        shape: CircularNotchedRectangle(),
+        notchMargin: 4.0,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          children: <Widget>[
+            ElevatedButton(
+              onPressed: () {
+                if (colorOptions.length > 1) {
+                  showModalBottomSheet(
+                    context: context,
+                    isScrollControlled: true,
+                    builder: (BuildContext context) {
+                      return VariantModal(
+                        selectedColorIndex: _selectedColorIndex,
+                        onColorSelected: (int selectedIndex) {
+                          setState(() {
+                            _selectedColorIndex = selectedIndex;
+                          });
+                        },
+                      );
+                    },
+                  );
+                } else {
+                  print('Beli');
+                }
+              },
+              style: ElevatedButton.styleFrom(
+                  foregroundColor: Colors.blueAccent,
+                  backgroundColor: Colors.white,
+                  padding: EdgeInsets.symmetric(horizontal: 32)),
+              child: Text(
+                'Beli',
+                style: TextStyle(color: Colors.blueAccent),
+              ),
+            ),
+            ElevatedButton(
+                onPressed: () {
+                  if (colorOptions.length > 1) {
+                    showModalBottomSheet(
+                      context: context,
+                      isScrollControlled: true,
+                      builder: (BuildContext context) {
+                        return VariantModal(
+                          selectedColorIndex: _selectedColorIndex,
+                          onColorSelected: (int selectedIndex) {
+                            setState(() {
+                              _selectedColorIndex = selectedIndex;
+                            });
+                          },
+                        );
+                      },
+                    );
+                  } else {
+                    showDialog(
+                      context: context,
+                      builder: (BuildContext context) {
+                        return AlertDialog(
+                          title: Text("Berhasil dimasukkan ke keranjang"),
+                          actions: <Widget>[
+                            TextButton(
+                              onPressed: () {
+                                Navigator.of(context).pop();
+                              },
+                              child: Text("OK"),
+                            ),
+                          ],
+                        );
+                      },
+                    );
+                  }
+                },
+                style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.blueAccent,
+                    padding: EdgeInsets.symmetric(horizontal: 16)),
+                child: Text(
+                  '+Keranjang',
+                  style: TextStyle(color: Colors.white),
+                ))
+          ],
         ),
       ),
     );

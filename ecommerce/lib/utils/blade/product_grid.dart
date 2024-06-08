@@ -86,7 +86,7 @@ class ProductGrid extends StatelessWidget {
                     child: Stack(
                       children: [
                         Image.network(
-                          'http://192.168.128.30:8000${productData.imageUrl}',
+                          'http://192.168.43.41:8000${productData.imageUrl}',
                           fit: BoxFit.cover,
                           errorBuilder: (context, error, stackTrace) {
                             return Center(
