@@ -1,4 +1,5 @@
 import 'package:ecommerce/models/product.dart';
+import 'package:ecommerce/ui/keranjang/keranjang_page.dart';
 import 'package:ecommerce/utils/blade/navbar_page.dart';
 
 import 'package:ecommerce/utils/blade/product_grid.dart';
@@ -97,15 +98,20 @@ class _HomePageState extends State<HomePage> {
         ),
         actions: [
           GestureDetector(
-            child: const Padding(
-              padding: EdgeInsets.only(right: 10),
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => KeranjangPage()),
+              );
+            },
+            child: Padding(
+              padding: const EdgeInsets.only(right: 16.0),
               child: Icon(
                 Icons.shopping_cart,
                 color: Colors.blueAccent,
               ),
             ),
-            onTap: () {},
-          )
+          ),
         ],
       ),
       bottomNavigationBar: NavbarPage(
