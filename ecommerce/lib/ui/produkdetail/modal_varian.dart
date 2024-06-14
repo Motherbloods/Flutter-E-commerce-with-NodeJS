@@ -1,26 +1,137 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:ecommerce/models/variants.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class VariantModal extends StatefulWidget {
   final int selectedColorIndex;
   final Function(int) onColorSelected;
+  final List<Variants> variants;
 
   const VariantModal({
     required this.selectedColorIndex,
     required this.onColorSelected,
+    required this.variants,
   });
 
   @override
   _VariantModalState createState() => _VariantModalState();
 }
 
+Future<void> _addToCart(
+    BuildContext context, Variants variant, int jumlah) async {
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  List<String> cartItems = prefs.getStringList('cart') ?? [];
+
+  // Cek apakah produk dengan ID yang sama sudah ada di keranjang
+  int existingIndex = cartItems.indexWhere((item) {
+    Map<String, dynamic> itemMap = jsonDecode(item);
+    return itemMap['id'] == variant.id;
+  });
+
+  if (existingIndex != -1) {
+    Map<String, dynamic> itemMap = jsonDecode(cartItems[existingIndex]);
+    print('ini item jumlah${itemMap['jumlah']} dan nini julmah $jumlah');
+    if (itemMap['jumlah'] == jumlah) {
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text('Peringatan'),
+            content: Text('Produk sudah ada di keranjang'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(),
+                child: Text('OK'),
+              ),
+            ],
+          );
+        },
+      );
+    } else {
+      itemMap['jumlah'] = jumlah;
+      cartItems[existingIndex] = jsonEncode(itemMap);
+      await prefs.setStringList('cart', cartItems);
+
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text('Berhasil'),
+            content: Text('Jumlah produk di keranjang berhasil diperbarui'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(),
+                child: Text('OK'),
+              ),
+            ],
+          );
+        },
+      );
+    }
+  } else {
+    // Jika produk dengan ID yang sama belum ada di keranjang, tambahkan ke keranjang
+    Map<String, dynamic> variantMap = {
+      'id': variant.id,
+      'name': variant.name,
+      'price': variant.price,
+      'imageUrl': variant.imageUrl,
+      'jumlah': jumlah,
+    };
+
+    cartItems.add(jsonEncode(variantMap));
+    await prefs.setStringList('cart', cartItems);
+
+    // Tampilkan dialog sukses dan tutup halaman modal_variant
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Berhasil'),
+          content: Text('Produk berhasil dimasukkan ke keranjang'),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Menutup dialog
+                Navigator.of(context).pop(); // Menutup halaman modal_variant
+              },
+              child: Text('OK'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+}
+
 class _VariantModalState extends State<VariantModal> {
   late int _selectedColorIndex;
-  final List<String> colorOptions = ['Red', 'blue', 'green'];
+  List<Variants>? variants; // No need for late
+
+  int _counter = 1; // Mulai dari 1
+
+  void _incrementCounter() {
+    setState(() {
+      _counter++;
+    });
+  }
+
+  void _decrementOrDelete() {
+    setState(() {
+      if (_counter == 1) {
+        _counter = 0; // Menghapus (mengatur ke 0)
+      } else if (_counter > 1) {
+        _counter--; // Mengurangi nilai
+      }
+    });
+  }
 
   @override
   void initState() {
     super.initState();
     _selectedColorIndex = widget.selectedColorIndex;
+    variants = widget.variants;
   }
 
   @override
@@ -28,6 +139,7 @@ class _VariantModalState extends State<VariantModal> {
     return DraggableScrollableSheet(
       expand: false,
       builder: (BuildContext context, ScrollController scrollController) {
+        var url = dotenv.env['URL'];
         return Scaffold(
           body: Padding(
             padding: const EdgeInsets.all(16.0),
@@ -47,7 +159,7 @@ class _VariantModalState extends State<VariantModal> {
                 Row(
                   children: [
                     Image.network(
-                      'https://via.placeholder.com/100',
+                      '$url${variants![_selectedColorIndex].imageUrl}',
                       width: 100,
                       height: 100,
                     ),
@@ -55,22 +167,33 @@ class _VariantModalState extends State<VariantModal> {
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('WAVE-BLACK'),
-                        Text('Rp132.500', style: TextStyle(fontSize: 18)),
+                        Text(variants![_selectedColorIndex]
+                            .name!), // Menampilkan nama varian yang dipilih
+                        Text('Rp${variants![_selectedColorIndex].price!}',
+                            style: TextStyle(
+                                fontSize:
+                                    18)), // Menampilkan harga varian yang dipilih
                         Text('Stok: 1.140'),
                       ],
                     ),
                   ],
                 ),
                 SizedBox(height: 16),
-                Text('Warna:', style: TextStyle(fontSize: 16)),
+                Text('Varian:', style: TextStyle(fontSize: 16)),
                 Wrap(
                   spacing: 8.0,
                   runSpacing: 4.0,
                   children:
-                      List<Widget>.generate(colorOptions.length, (int index) {
+                      List<Widget>.generate(variants!.length, (int index) {
+                    final variant = variants![index];
                     return ChoiceChip(
-                      label: Text(colorOptions[index]),
+                      label: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(variant.name!),
+                          Text('Rp${variant.price}'),
+                        ],
+                      ),
                       selected: _selectedColorIndex == index,
                       onSelected: (bool selected) {
                         setState(() {
@@ -80,6 +203,32 @@ class _VariantModalState extends State<VariantModal> {
                       },
                     );
                   }).toList(),
+                ),
+                Text('Jumlah: '),
+                Row(
+                  children: [
+                    SizedBox(width: 10),
+                    IconButton(
+                      icon: _counter == 1
+                          ? Icon(Icons.delete)
+                          : Icon(Icons.remove),
+                      onPressed: _decrementOrDelete,
+                    ),
+                    SizedBox(width: 10),
+                    Text(
+                      '$_counter',
+                      style: TextStyle(
+                        color: Colors.black,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    SizedBox(width: 10),
+                    IconButton(
+                      icon: Icon(Icons.add),
+                      onPressed: _incrementCounter,
+                    ),
+                    SizedBox(width: 10),
+                  ],
                 ),
               ],
             ),
@@ -107,7 +256,8 @@ class _VariantModalState extends State<VariantModal> {
                 ),
                 ElevatedButton(
                   onPressed: () {
-                    // Add your onPressed code here!
+                    _addToCart(
+                        context, variants![_selectedColorIndex], _counter);
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.blueAccent,

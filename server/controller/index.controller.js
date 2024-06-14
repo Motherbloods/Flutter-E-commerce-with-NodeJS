@@ -51,6 +51,7 @@ const register = async (req, res) => {
 const login = async (req, res) => {
   try {
     const { email, password } = req.body;
+    console.log("halo");
     if (!email || !password) {
       return res.status(400).send("Please fill all required fields");
     }

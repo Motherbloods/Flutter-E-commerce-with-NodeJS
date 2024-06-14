@@ -39,7 +39,6 @@ class SearchHelper {
       for (var item in jsonData) {
         searchHistory.add(SearchHistory.fromJson(item));
       }
-      print('ini broo ${searchHistory.runtimeType}');
       return searchHistory;
     } else {
       throw Exception('Failed to load search history');

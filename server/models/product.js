@@ -1,5 +1,16 @@
 const mongoose = require("mongoose");
 
+const variantSchema = new mongoose.Schema({
+  name: {
+    type: String,
+    required: true,
+  },
+  price: {
+    type: Number,
+    required: true,
+  },
+});
+
 const productsSchema = new mongoose.Schema({
   name: {
     type: String,
@@ -14,7 +25,7 @@ const productsSchema = new mongoose.Schema({
     required: true,
   },
   category: {
-    type: Array,
+    type: [String], // Array of strings
     required: false,
   },
   stockQuantity: {
@@ -40,10 +51,10 @@ const productsSchema = new mongoose.Schema({
     type: String,
     ref: "Review",
   },
+  variants: [variantSchema], // Array of variant subdocuments
 });
 
-const Products = mongoose.model("Products", productsSchema);
-
+const Products = mongoose.model("Product", productsSchema);
 module.exports = Products;
 
 const dummyProducts = [

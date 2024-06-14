@@ -3,6 +3,7 @@ import 'package:ecommerce/models/seller.dart';
 import 'package:ecommerce/ui/produkdetail/produkdetail_page.dart';
 import 'package:ecommerce/ui/produk&seller/seller.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:intl/intl.dart';
 
 class ProductGrid extends StatelessWidget {
@@ -25,6 +26,7 @@ class ProductGrid extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    var url = dotenv.env['URL'];
     return SizedBox(
       child: GridView.builder(
         controller: scrollController,
@@ -86,7 +88,7 @@ class ProductGrid extends StatelessWidget {
                     child: Stack(
                       children: [
                         Image.network(
-                          'http://192.168.43.41:8000${productData.imageUrl}',
+                          '$url${productData.imageUrl}',
                           fit: BoxFit.cover,
                           errorBuilder: (context, error, stackTrace) {
                             return Center(

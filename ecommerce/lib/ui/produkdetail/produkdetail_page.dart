@@ -6,6 +6,7 @@ import 'package:ecommerce/ui/produkdetail/reviews.dart';
 import 'package:ecommerce/utils/api/get_seller.dart';
 import 'package:ecommerce/utils/blade/product_grid.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:intl/intl.dart';
 
 class ProductDetailPage extends StatefulWidget {
@@ -20,6 +21,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
   int currentImage = 0;
   int _selectedTabIndex = 0;
   int _selectedColorIndex = 0;
+
   final List<String> images = [
     'https://picsum.photos/id/21/1280/853',
     'https://picsum.photos/id/22/1280/853',
@@ -69,10 +71,10 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                     });
                   },
                   itemBuilder: (context, index) {
+                    var url = dotenv.env['URL'];
                     return Hero(
                       tag: images[index],
-                      child: Image.network(
-                          'http://192.168.43.41:8000${widget.product.imageUrl}'),
+                      child: Image.network('$url${widget.product.imageUrl}'),
                     );
                   },
                 ),
@@ -354,7 +356,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
           children: <Widget>[
             ElevatedButton(
               onPressed: () {
-                if (colorOptions.length > 1) {
+                if (widget.product.variants!.isNotEmpty) {
                   showModalBottomSheet(
                     context: context,
                     isScrollControlled: true,
@@ -366,6 +368,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                             _selectedColorIndex = selectedIndex;
                           });
                         },
+                        variants: widget.product.variants!,
                       );
                     },
                   );
@@ -384,7 +387,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
             ),
             ElevatedButton(
                 onPressed: () {
-                  if (colorOptions.length > 1) {
+                  if (widget.product.variants!.isNotEmpty) {
                     showModalBottomSheet(
                       context: context,
                       isScrollControlled: true,
@@ -396,6 +399,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                               _selectedColorIndex = selectedIndex;
                             });
                           },
+                          variants: widget.product.variants!,
                         );
                       },
                     );

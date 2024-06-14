@@ -34,7 +34,7 @@ class _LoginPageState extends State<LoginPage> {
 
     try {
       final api = dotenv.env['URL'] ?? '';
-      String url = '${api}/api/login';
+      String url = '$api/api/login';
 
       final response = await http.post(
         (Uri.parse(url)),
