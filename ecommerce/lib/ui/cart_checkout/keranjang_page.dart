@@ -1,3 +1,5 @@
+import 'package:ecommerce/models/variants.dart';
+import 'package:ecommerce/ui/cart_checkout/checkout.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
@@ -12,6 +14,7 @@ class KeranjangPage extends StatefulWidget {
 class _KeranjangPageState extends State<KeranjangPage> {
   List<Map<String, dynamic>> _cart = [];
   List<bool> isSelectedList = [];
+  List<String> _checkout = [];
 
   @override
   void initState() {
@@ -22,6 +25,7 @@ class _KeranjangPageState extends State<KeranjangPage> {
   Future<void> _loadCart() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     List<String>? cartItems = prefs.getStringList('cart');
+
     if (cartItems != null) {
       _cart = cartItems
           .map((item) => jsonDecode(item) as Map<String, dynamic>)
@@ -29,7 +33,6 @@ class _KeranjangPageState extends State<KeranjangPage> {
       isSelectedList = List.filled(_cart.length, false);
     }
     setState(() {});
-    print('ini sebelum delet $_cart');
   }
 
   Future<void> _saveCart() async {
@@ -46,7 +49,6 @@ class _KeranjangPageState extends State<KeranjangPage> {
       });
       await _saveCart();
     }
-    print('ini setelah delete $_cart');
   }
 
   double _calculateTotal() {
@@ -60,6 +62,36 @@ class _KeranjangPageState extends State<KeranjangPage> {
       }
     }
     return total;
+  }
+
+  void _checkoutPage() {
+    List<Map<String, dynamic>> selectedItems = [];
+    for (int i = 0; i < _cart.length; i++) {
+      if (isSelectedList[i]) {
+        final item = _cart[i];
+        final selectedVariant = item['variant']
+            .firstWhere((variant) => variant['_id'] == item['variantId']);
+        final selectedItem = {
+          ...item,
+          'variant': [
+            {
+              '_id': selectedVariant['_id'],
+              'name': selectedVariant['name'],
+              'price': selectedVariant['price'],
+              'stock': selectedVariant['stock'],
+              'imageUrl': selectedVariant['imageUrl']
+            }
+          ]
+        };
+        selectedItems.add(selectedItem);
+      }
+    }
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => CheckoutPage(product: selectedItems),
+      ),
+    );
   }
 
   @override
@@ -79,8 +111,27 @@ class _KeranjangPageState extends State<KeranjangPage> {
                       itemCount: _cart.length,
                       itemBuilder: (context, index) {
                         final item = _cart[index];
-                        print('ini panjang item $item');
+                        List<Map<String, dynamic>> variants =
+                            List<Map<String, dynamic>>.from(item['variant']);
+                        Map<String, dynamic>? selectedVariant;
+                        selectedVariant = variants.firstWhere(
+                          (variant) {
+                            // print(
+                            //     '${variant['_id']} == ${item['variantId']}: ${variant['_id'] == item['variantId']}');
 
+                            return variant['_id'] == item['variantId'];
+                          },
+                          orElse: () => <String, dynamic>{},
+                        );
+
+                        List<DropdownMenuItem<Map<String, dynamic>>>
+                            dropdownItems = variants.map((variant) {
+                          return DropdownMenuItem<Map<String, dynamic>>(
+                            value: variant,
+                            child: Text(
+                                '${variant['name']} - Rp ${variant['price']}'),
+                          );
+                        }).toList();
                         return Stack(
                           children: [
                             //produk
@@ -128,8 +179,26 @@ class _KeranjangPageState extends State<KeranjangPage> {
                                           ),
                                         ),
                                         const SizedBox(height: 5),
+                                        DropdownButton<Map<String, dynamic>>(
+                                            value: selectedVariant,
+                                            items: dropdownItems,
+                                            onChanged: (Map<String, dynamic>?
+                                                newValue) {
+                                              setState(() {
+                                                selectedVariant = newValue;
+                                                item['variantId'] =
+                                                    newValue!['_id'];
+                                                item['price'] =
+                                                    newValue['price'];
+                                                item['imageUrl'] =
+                                                    newValue['imageUrl'];
+                                                // Lakukan operasi lain jika diperlukan
+                                              });
+                                            },
+                                            hint: Text('halo')),
                                         Text(
-                                          'Seller Product', // Ganti dengan sellerName dari item
+                                          item['sellerName'] ??
+                                              'Seller Name', // Ganti dengan sellerName dari item
                                           style: const TextStyle(
                                             fontSize: 14,
                                             color: Colors.grey,
@@ -252,7 +321,7 @@ class _KeranjangPageState extends State<KeranjangPage> {
               ],
             ),
             ElevatedButton(
-                onPressed: () {},
+                onPressed: _checkoutPage,
                 style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.blueAccent,
                     padding: EdgeInsets.symmetric(horizontal: 16)),

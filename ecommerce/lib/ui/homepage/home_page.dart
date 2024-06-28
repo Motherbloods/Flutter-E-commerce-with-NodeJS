@@ -1,5 +1,5 @@
 import 'package:ecommerce/models/product.dart';
-import 'package:ecommerce/ui/keranjang/keranjang_page.dart';
+import 'package:ecommerce/ui/cart_checkout/keranjang_page.dart';
 import 'package:ecommerce/utils/blade/navbar_page.dart';
 
 import 'package:ecommerce/utils/blade/product_grid.dart';
@@ -114,9 +114,9 @@ class _HomePageState extends State<HomePage> {
           ),
         ],
       ),
-      bottomNavigationBar: NavbarPage(
-        selectedIndex: _selectedIndex,
-      ),
+      // bottomNavigationBar: NavbarPage(
+      //   selectedIndex: _selectedIndex,
+      // ),
       body: FutureBuilder(
         future: _getProducts(),
         builder: (BuildContext context, AsyncSnapshot snapshot) {
@@ -137,123 +137,125 @@ class _HomePageState extends State<HomePage> {
             return ListView.builder(
                 itemCount: 1,
                 itemBuilder: (context, index) {
-                  return SingleChildScrollView(
-                    child: Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Column(
-                        children: [
-                          //Layanan
-                          Container(
-                            decoration: const BoxDecoration(
-                              color: Colors.grey,
-                              borderRadius:
-                                  BorderRadius.all(Radius.circular(10)),
-                            ),
-                            child: SizedBox(
-                              height: 100.0,
-                              child: Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceEvenly,
-                                children:
-                                    List.generate(myIcons.length, (index) {
-                                  return GestureDetector(
-                                    onTap: () {
-                                      navigateToPage(
-                                          context, myIconNames[index]);
-                                    },
-                                    child: Column(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.start,
-                                      children: [
-                                        Container(
-                                          width: 50,
-                                          height: 50,
-                                          margin: const EdgeInsets.all(5),
-                                          padding: const EdgeInsets.all(10),
-                                          decoration: BoxDecoration(
-                                            color: Colors.white,
-                                            borderRadius:
-                                                BorderRadius.circular(10),
-                                          ),
-                                          child: Center(
-                                            child: Icon(
-                                              myIcons[index],
-                                              color: Colors.black,
-                                            ),
-                                          ),
-                                        ),
-                                        SizedBox(
-                                          width:
-                                              60, // Set a width to constrain the text
-                                          child: Text(
-                                            myIconNames[index],
-                                            style: const TextStyle(
+                  return Expanded(
+                    child: SingleChildScrollView(
+                      child: Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Column(
+                          children: [
+                            //Layanan
+                            Container(
+                              decoration: const BoxDecoration(
+                                color: Colors.grey,
+                                borderRadius:
+                                    BorderRadius.all(Radius.circular(10)),
+                              ),
+                              child: SizedBox(
+                                height: 100.0,
+                                child: Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceEvenly,
+                                  children:
+                                      List.generate(myIcons.length, (index) {
+                                    return GestureDetector(
+                                      onTap: () {
+                                        navigateToPage(
+                                            context, myIconNames[index]);
+                                      },
+                                      child: Column(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.start,
+                                        children: [
+                                          Container(
+                                            width: 50,
+                                            height: 50,
+                                            margin: const EdgeInsets.all(5),
+                                            padding: const EdgeInsets.all(10),
+                                            decoration: BoxDecoration(
                                               color: Colors.white,
+                                              borderRadius:
+                                                  BorderRadius.circular(10),
                                             ),
-                                            textAlign: TextAlign
-                                                .center, // Center align the text
-                                            maxLines:
-                                                2, // Allow text to wrap to 2 lines
-                                            overflow: TextOverflow
-                                                .ellipsis, // Handle overflow
+                                            child: Center(
+                                              child: Icon(
+                                                myIcons[index],
+                                                color: Colors.black,
+                                              ),
+                                            ),
                                           ),
-                                        ),
-                                      ],
-                                    ),
-                                  );
-                                }),
+                                          SizedBox(
+                                            width:
+                                                60, // Set a width to constrain the text
+                                            child: Text(
+                                              myIconNames[index],
+                                              style: const TextStyle(
+                                                color: Colors.white,
+                                              ),
+                                              textAlign: TextAlign
+                                                  .center, // Center align the text
+                                              maxLines:
+                                                  2, // Allow text to wrap to 2 lines
+                                              overflow: TextOverflow
+                                                  .ellipsis, // Handle overflow
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    );
+                                  }),
+                                ),
                               ),
                             ),
-                          ),
-                          const SizedBox(height: 4),
-                          //Rekomendasi
-                          Padding(
-                            padding: EdgeInsets.all(8.0),
-                            child: Column(
-                              children: [
-                                Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Align(
-                                      alignment: Alignment
-                                          .centerLeft, // Align text to the left
-                                      child: Text(
-                                        'Recommendations',
-                                        style: TextStyle(
-                                            color: Colors.black,
-                                            fontSize: 21,
-                                            fontWeight: FontWeight.bold),
-                                      ),
-                                    ),
-                                    GestureDetector(
-                                      onTap: () {
-                                        // Navigasi ke halaman semua produk
-                                        Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                              builder: (context) =>
-                                                  AllProdukRecomendations(
-                                                    token: widget.token,
-                                                  )),
-                                        );
-                                      },
-                                      child: Text(
-                                        'Lihat Semua Produk',
-                                        style: TextStyle(
-                                          color: Colors.black,
-                                          fontSize: 21,
-                                          fontWeight: FontWeight.normal,
+                            const SizedBox(height: 4),
+                            //Rekomendasi
+                            Padding(
+                              padding: EdgeInsets.all(8.0),
+                              child: Column(
+                                children: [
+                                  Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Align(
+                                        alignment: Alignment
+                                            .centerLeft, // Align text to the left
+                                        child: Text(
+                                          'Recommendations',
+                                          style: TextStyle(
+                                              color: Colors.black,
+                                              fontSize: 21,
+                                              fontWeight: FontWeight.bold),
                                         ),
                                       ),
-                                    ),
-                                  ],
-                                ),
-                                ProductGrid(products: products)
-                              ],
+                                      GestureDetector(
+                                        onTap: () {
+                                          // Navigasi ke halaman semua produk
+                                          Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                                builder: (context) =>
+                                                    AllProdukRecomendations(
+                                                      token: widget.token,
+                                                    )),
+                                          );
+                                        },
+                                        child: Text(
+                                          'Lihat Semua Produk',
+                                          style: TextStyle(
+                                            color: Colors.black,
+                                            fontSize: 21,
+                                            fontWeight: FontWeight.normal,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  ProductGrid(products: products)
+                                ],
+                              ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     ),
                   );

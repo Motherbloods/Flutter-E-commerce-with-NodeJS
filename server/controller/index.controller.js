@@ -20,15 +20,34 @@ const register = async (req, res) => {
   try {
     const { email, password, confirmPassword } = req.body;
     if (!email || !password || !confirmPassword) {
-      return res.status(400).send("Please fill all required fields");
+      return res.status(400).json({
+        type: "/errors/missing-fields",
+        title: "Missing required fields",
+        status: 400,
+        detail:
+          "Please fill all required fields: email, password, and confirm password.",
+        instance: req.originalUrl,
+      });
     }
     if (password !== confirmPassword) {
-      return res.status(400).send("Password and confirm password must match");
+      return res.status(400).json({
+        type: "/errors/password-mismatch",
+        title: "Password mismatch",
+        status: 400,
+        detail: "Password and confirm password must match.",
+        instance: req.originalUrl,
+      });
     }
 
     const alreadyUser = await Users.findOne({ email });
     if (alreadyUser) {
-      return res.status(409).send("User already exists, please login");
+      return res.status(409).json({
+        type: "/errors/user-exists",
+        title: "User already exists",
+        status: 409,
+        detail: "User already exists, please login.",
+        instance: req.originalUrl,
+      });
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -39,19 +58,30 @@ const register = async (req, res) => {
     });
 
     await newUser.save();
-    return res
-      .status(201)
-      .send({ success: true, message: "User created successfully" });
+    return res.status(201).json({
+      type: "/success/user-created",
+      title: "User created successfully",
+      status: 201,
+      detail: "User created successfully.",
+      instance: req.originalUrl,
+      id: newUser._id,
+    });
   } catch (err) {
     console.error(err);
-    return res.status(500).send("Internal Server Error");
+    return res.status(500).json({
+      type: "/errors/internal-server-error",
+      title: "Internal Server Error",
+      status: 500,
+      detail: "An unexpected error occurred. Please try again later.",
+      instance: req.originalUrl,
+    });
   }
 };
 
 const login = async (req, res) => {
   try {
     const { email, password } = req.body;
-    console.log("halo");
+
     if (!email || !password) {
       return res.status(400).send("Please fill all required fields");
     }
@@ -67,7 +97,7 @@ const login = async (req, res) => {
       // Use the same error message to avoid timing attacks
       return res.status(400).send("Email or password is incorrect");
     }
-
+    console.log("ini user sender", user._id);
     const secretToken = process.env.SECRET_TOKEN || "sfdkjdsakjsfdjkjadsfjk";
     const token = jwt.sign(
       {
@@ -87,6 +117,113 @@ const login = async (req, res) => {
     await user.save();
 
     return res.status(200).send({ success: true, token, id: user._id });
+  } catch (err) {
+    console.error("ini error", err);
+    return res.status(500).send("Internal Server Error");
+  }
+};
+
+const registerSeller = async (req, res) => {
+  try {
+    const { email, password, confirmPassword, namaToko } = req.body;
+    if (!email || !password || !confirmPassword) {
+      return res.status(400).json({
+        type: "/errors/missing-fields",
+        title: "Missing required fields",
+        status: 400,
+        detail:
+          "Please fill all required fields: email, password, and confirm password.",
+        instance: req.originalUrl,
+      });
+    }
+    if (password !== confirmPassword) {
+      return res.status(400).json({
+        type: "/errors/password-mismatch",
+        title: "Password mismatch",
+        status: 400,
+        detail: "Password and confirm password must match.",
+        instance: req.originalUrl,
+      });
+    }
+
+    const alreadySeller = await Sellers.findOne({ email });
+    if (alreadySeller) {
+      return res.status(409).json({
+        type: "/errors/user-exists",
+        title: "User already exists",
+        status: 409,
+        detail: "User already exists, please login.",
+        instance: req.originalUrl,
+      });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const newSeller = new Sellers({
+      email,
+      password: hashedPassword,
+      namaToko,
+    });
+
+    await newSeller.save();
+    return res.status(201).json({
+      type: "/success/user-created",
+      title: "User created successfully",
+      status: 201,
+      detail: "User created successfully.",
+      instance: req.originalUrl,
+      id: newSeller._id,
+    });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({
+      type: "/errors/internal-server-error",
+      title: "Internal Server Error",
+      status: 500,
+      detail: "An unexpected error occurred. Please try again later.",
+      instance: req.originalUrl,
+    });
+  }
+};
+const loginSeller = async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    if (!email || !password) {
+      return res.status(400).send("Please fill all required fields");
+    }
+
+    const seller = await Sellers.findOne({ email });
+    console.log(seller._id);
+    if (!seller) {
+      // Use the same error message to avoid timing attacks
+      return res.status(400).send("Email or password is incorrect");
+    }
+
+    const validateseller = await bcrypt.compare(password, seller.password);
+    if (!validateseller) {
+      // Use the same error message to avoid timing attacks
+      return res.status(400).send("Email or password is incorrect");
+    }
+
+    const secretToken = process.env.SECRET_TOKEN || "sfdkjdsakjsfdjkjadsfjk";
+    const token = jwt.sign(
+      {
+        _id: seller._id,
+        email: seller.email,
+        namaToko: seller.namaToko,
+      },
+      secretToken,
+      {
+        expiresIn: "1d",
+      }
+    );
+
+    // Update seller's token and save
+    seller.token = token;
+    await seller.save();
+
+    return res.status(200).send({ success: true, token, id: seller._id });
   } catch (err) {
     console.error("ini error", err);
     return res.status(500).send("Internal Server Error");
@@ -272,25 +409,24 @@ const getSellerHome = async (req, res) => {
   }
 };
 
-const updateProfile = async (req, res) => {
+const updateUser = async (req, res) => {
   try {
-    const { fullName, alamat, username, recomendations } = req.body;
-    const { _id } = req.user;
+    const { fullName, username, id, alamat, recomendations } = req.body;
 
-    const user = await Users.findById(_id);
+    const user = await Users.findById(id);
     if (!user) {
       return res.status(404).send("user not found");
     }
-
     user.fullname = fullName;
     user.alamat = alamat;
     user.username = username;
     user.recomendations = recomendations;
     await user.save();
+    console.log(user);
 
     res.status(200).send("Profile updated successfully");
   } catch (err) {
-    console.error("Error in updateProfile:", err);
+    console.error("Error in updateUser:", err);
     res.status(500).send("Internal Server Error");
   }
 };
@@ -412,14 +548,44 @@ const getProductSearch = async (req, res) => {
 
 const pembayaran = async (req, res) => {};
 
+const get_user = async (req, res) => {
+  try {
+    const userId = req.query.id;
+
+    if (!userId) {
+      return res.status(400).json({ error: "User ID is required" });
+    }
+
+    const user = await Users.findById(userId);
+
+    if (user) {
+      return res.json({
+        _id: user._id,
+        email: user.email,
+        alamat: user.alamat,
+        fullName: user?.fullname,
+        noHP: user.noHP,
+        username: user.username,
+      });
+    } else {
+      return res.status(404).json({ error: "User not found" });
+    }
+  } catch (error) {
+    console.log(console.error);
+  }
+};
+
 module.exports = {
   register,
   login,
   getRecomendations,
-  updateProfile,
+  updateUser,
   getDetailProduk,
   getSellerHome,
   searchWithPicture,
   getSuggest,
   getProductSearch,
+  get_user,
+  registerSeller,
+  loginSeller,
 };

@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:ecommerce/models/product.dart';
 import 'package:flutter/material.dart';
 import 'package:ecommerce/models/variants.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -8,19 +9,20 @@ class VariantModal extends StatefulWidget {
   final int selectedColorIndex;
   final Function(int) onColorSelected;
   final List<Variants> variants;
+  final Product products;
 
-  const VariantModal({
-    required this.selectedColorIndex,
-    required this.onColorSelected,
-    required this.variants,
-  });
+  const VariantModal(
+      {required this.selectedColorIndex,
+      required this.onColorSelected,
+      required this.variants,
+      required this.products});
 
   @override
   _VariantModalState createState() => _VariantModalState();
 }
 
 Future<void> _addToCart(
-    BuildContext context, Variants variant, int jumlah) async {
+    BuildContext context, Variants variant, int jumlah, Product product) async {
   SharedPreferences prefs = await SharedPreferences.getInstance();
   List<String> cartItems = prefs.getStringList('cart') ?? [];
 
@@ -32,7 +34,6 @@ Future<void> _addToCart(
 
   if (existingIndex != -1) {
     Map<String, dynamic> itemMap = jsonDecode(cartItems[existingIndex]);
-    print('ini item jumlah${itemMap['jumlah']} dan nini julmah $jumlah');
     if (itemMap['jumlah'] == jumlah) {
       showDialog(
         context: context,
@@ -73,16 +74,19 @@ Future<void> _addToCart(
   } else {
     // Jika produk dengan ID yang sama belum ada di keranjang, tambahkan ke keranjang
     Map<String, dynamic> variantMap = {
-      'id': variant.id,
-      'name': variant.name,
+      'productId': product.id,
+      'variantId': variant.id,
+      'name': product.name,
       'price': variant.price,
       'imageUrl': variant.imageUrl,
       'jumlah': jumlah,
+      'sellerName': product.sellerName, // Menambahkan sellerName
+      'sellerId': product.sellerId,
+      'variant': product.variants?.map((v) => v.toJson()).toList()
     };
 
     cartItems.add(jsonEncode(variantMap));
     await prefs.setStringList('cart', cartItems);
-
     // Tampilkan dialog sukses dan tutup halaman modal_variant
     showDialog(
       context: context,
@@ -108,6 +112,8 @@ Future<void> _addToCart(
 class _VariantModalState extends State<VariantModal> {
   late int _selectedColorIndex;
   List<Variants>? variants; // No need for late
+  String? sellerName;
+  String? sellerId;
 
   int _counter = 1; // Mulai dari 1
 
@@ -159,7 +165,7 @@ class _VariantModalState extends State<VariantModal> {
                 Row(
                   children: [
                     Image.network(
-                      '$url${variants![_selectedColorIndex].imageUrl}',
+                      '${variants![_selectedColorIndex].imageUrl}',
                       width: 100,
                       height: 100,
                     ),
@@ -256,8 +262,8 @@ class _VariantModalState extends State<VariantModal> {
                 ),
                 ElevatedButton(
                   onPressed: () {
-                    _addToCart(
-                        context, variants![_selectedColorIndex], _counter);
+                    _addToCart(context, variants![_selectedColorIndex],
+                        _counter, widget.products);
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.blueAccent,

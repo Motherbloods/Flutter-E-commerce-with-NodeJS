@@ -9,10 +9,13 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  alamat: {
+  noHP: {
     type: String,
+  },
+  alamat: {
+    type: Array,
     required: false,
-    default: "",
+    default: [],
   },
   fullname: {
     type: String,

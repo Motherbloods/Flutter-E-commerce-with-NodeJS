@@ -23,4 +23,15 @@ class Variants {
         imageUrl: json['imageUrl'],
         sellerName: json['sellerName']);
   }
+
+  Map<String, dynamic> toJson() {
+    return {
+      '_id': id,
+      'name': name,
+      'price': price,
+      'stock': stock,
+      'imageUrl': imageUrl,
+      'sellerName': sellerName
+    };
+  }
 }

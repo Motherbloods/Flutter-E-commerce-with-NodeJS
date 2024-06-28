@@ -1,5 +1,9 @@
+import 'dart:convert';
+
+import 'package:ecommerce/models/conversations.dart';
 import 'package:ecommerce/models/product.dart';
 import 'package:ecommerce/models/seller.dart';
+import 'package:ecommerce/ui/chat/chat_screen.dart';
 import 'package:ecommerce/ui/produkdetail/deskripsi.dart';
 import 'package:ecommerce/ui/produkdetail/modal_varian.dart';
 import 'package:ecommerce/ui/produkdetail/reviews.dart';
@@ -8,6 +12,8 @@ import 'package:ecommerce/utils/blade/product_grid.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:intl/intl.dart';
+import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 
 class ProductDetailPage extends StatefulWidget {
   final Product product;
@@ -18,9 +24,23 @@ class ProductDetailPage extends StatefulWidget {
 }
 
 class _ProductDetailPageState extends State<ProductDetailPage> {
+  void initState() {
+    super.initState();
+    loadUser();
+  }
+
   int currentImage = 0;
   int _selectedTabIndex = 0;
   int _selectedColorIndex = 0;
+  String? userId;
+
+  Future<void> loadUser() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? id = prefs.getString('userId');
+    setState(() {
+      userId = id;
+    });
+  }
 
   final List<String> images = [
     'https://picsum.photos/id/21/1280/853',
@@ -28,6 +48,27 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
     'https://picsum.photos/id/23/1280/853',
   ];
   final List<String> colorOptions = ['Red'];
+
+  Future<void> createConversations() async {
+    if (userId == null) {
+      print('Error: userId is null');
+      return;
+    }
+
+    final url = dotenv.env['URL'] ?? '';
+    final Map<String, String> payload = {
+      'senderId': widget.product.sellerId!,
+      'receiverId': userId ?? ''
+    };
+
+    final response = await http.post(
+      Uri.parse('$url/api/conversation'),
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: json.encode(payload),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -64,17 +105,16 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
               SizedBox(
                 height: 250,
                 child: PageView.builder(
-                  itemCount: 1,
+                  itemCount: widget.product.imageUrl!.length,
                   onPageChanged: (int index) {
                     setState(() {
                       currentImage = index;
                     });
                   },
                   itemBuilder: (context, index) {
-                    var url = dotenv.env['URL'];
                     return Hero(
-                      tag: images[index],
-                      child: Image.network('$url${widget.product.imageUrl}'),
+                      tag: widget.product.imageUrl![index],
+                      child: Image.network('${widget.product.imageUrl}'),
                     );
                   },
                 ),
@@ -148,7 +188,6 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                                 Row(
                                   children: [
                                     Container(
-                                      width: 55,
                                       height: 25,
                                       decoration: BoxDecoration(
                                         borderRadius: BorderRadius.circular(15),
@@ -179,8 +218,8 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                                       ),
                                     ),
                                     const SizedBox(width: 5),
-                                    const Text(
-                                      '500 Review',
+                                    Text(
+                                      '${widget.product.reviews == null ? '0' : widget.product.reviews?.length} Review',
                                       style: TextStyle(
                                         color: Colors.grey,
                                         fontSize: 15,
@@ -369,6 +408,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                           });
                         },
                         variants: widget.product.variants!,
+                        products: widget.product,
                       );
                     },
                   );
@@ -382,6 +422,26 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                   padding: EdgeInsets.symmetric(horizontal: 32)),
               child: Text(
                 'Beli',
+                style: TextStyle(color: Colors.blueAccent),
+              ),
+            ),
+            ElevatedButton(
+              onPressed: () => {
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => ChatScreen(
+                            senderId: userId!,
+                            receiverId: widget.product.sellerId!,
+                            storeName: widget.product.sellerName,
+                            product: widget.product)))
+              },
+              style: ElevatedButton.styleFrom(
+                  foregroundColor: Colors.blueAccent,
+                  backgroundColor: Colors.white,
+                  padding: EdgeInsets.symmetric(horizontal: 32)),
+              child: Text(
+                'Chat',
                 style: TextStyle(color: Colors.blueAccent),
               ),
             ),
@@ -400,6 +460,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                             });
                           },
                           variants: widget.product.variants!,
+                          products: widget.product,
                         );
                       },
                     );
@@ -408,13 +469,13 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                       context: context,
                       builder: (BuildContext context) {
                         return AlertDialog(
-                          title: Text("Berhasil dimasukkan ke keranjang"),
+                          title: Text('Berhasil dimasukkan ke keranjang'),
                           actions: <Widget>[
                             TextButton(
                               onPressed: () {
                                 Navigator.of(context).pop();
                               },
-                              child: Text("OK"),
+                              child: Text('OK'),
                             ),
                           ],
                         );
