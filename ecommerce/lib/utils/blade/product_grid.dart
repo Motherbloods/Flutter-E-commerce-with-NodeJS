@@ -3,6 +3,8 @@ import 'package:ecommerce/models/seller.dart';
 import 'package:ecommerce/ui/produkdetail/produkdetail_page.dart';
 import 'package:ecommerce/ui/produk&seller/seller.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:intl/intl.dart';
 
 class ProductGrid extends StatelessWidget {
@@ -25,6 +27,7 @@ class ProductGrid extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    var url = dotenv.env['URL'];
     return SizedBox(
       child: GridView.builder(
         controller: scrollController,
@@ -46,155 +49,172 @@ class ProductGrid extends StatelessWidget {
               return Center(child: CircularProgressIndicator());
             }
           }
-          final productData = products[index];
-          final formattedPrice = NumberFormat.currency(
-            locale: 'id_ID',
-            decimalDigits: 0,
-            symbol: 'Rp ',
-          ).format(productData.price);
-          return GestureDetector(
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => ProductDetailPage(product: productData),
-                ),
-              );
-            },
-            child: Container(
-              width: 180,
-              padding: const EdgeInsets.all(1),
-              decoration: BoxDecoration(
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.grey.withOpacity(0.1),
-                    blurRadius: 50,
-                    spreadRadius: 7,
-                    offset: const Offset(0, 2),
-                  )
-                ],
-                borderRadius: BorderRadius.circular(16),
-                color: Colors.white,
-              ),
-              child: Column(
-                children: [
-                  // Gambar
-                  Container(
-                    height: 180,
-                    padding: const EdgeInsets.all(8.0),
-                    color: Colors.white,
-                    child: Stack(
-                      children: [
-                        Image.network(
-                          'http://192.168.43.41:8000${productData.imageUrl}',
-                          fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) {
-                            return Center(
-                              child: Text(
-                                'Failed to load image',
-                                style: TextStyle(color: Colors.red),
-                              ),
-                            );
-                          },
-                          loadingBuilder: (context, child, loadingProgress) {
-                            if (loadingProgress == null) return child;
-                            return const Center(
-                              child: CircularProgressIndicator(),
-                            );
-                          },
-                        ),
-                        Positioned(
-                          top: 8,
-                          child: Container(
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(8),
-                              color: Colors.amber,
-                            ),
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 8,
-                              vertical: 4,
-                            ),
-                            child: const Text(
-                              '25%',
-                              style: TextStyle(color: Colors.black),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
+          if (index < products.length) {
+            final productData = products[index];
+            final formattedPrice = NumberFormat.currency(
+              locale: 'id_ID',
+              decimalDigits: 0,
+              symbol: 'Rp ',
+            ).format(productData.price);
+            return GestureDetector(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) =>
+                        ProductDetailPage(product: productData),
                   ),
-                  // Detail
-                  Expanded(
-                    child: Padding(
+                );
+              },
+              child: Container(
+                width: 180,
+                padding: const EdgeInsets.all(1),
+                decoration: BoxDecoration(
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.grey.withOpacity(0.1),
+                      blurRadius: 50,
+                      spreadRadius: 7,
+                      offset: const Offset(0, 2),
+                    )
+                  ],
+                  borderRadius: BorderRadius.circular(16),
+                  color: Colors.white,
+                ),
+                child: Column(
+                  children: [
+                    // Gambar
+                    Container(
+                      height: 180,
                       padding: const EdgeInsets.all(8.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                      color: Colors.white,
+                      child: Stack(
                         children: [
-                          Text(
-                            '${productData.name}',
-                            style: const TextStyle(
-                              color: Colors.black,
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
+                          Image.network(
+                            '${productData.imageUrl}',
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) {
+                              return Center(
+                                child: Text(
+                                  'Failed to load image',
+                                  style: TextStyle(color: Colors.red),
+                                ),
+                              );
+                            },
+                            loadingBuilder: (context, child, loadingProgress) {
+                              if (loadingProgress == null) return child;
+                              return const Center(
+                                child: CircularProgressIndicator(),
+                              );
+                            },
+                          ),
+                          Positioned(
+                            top: 8,
+                            child: Container(
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(8),
+                                color: Colors.amber,
+                              ),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 4,
+                              ),
+                              child: const Text(
+                                '25%',
+                                style: TextStyle(color: Colors.black),
+                              ),
                             ),
-                          ),
-                          Row(
-                            children: [
-                              GestureDetector(
-                                onTap: () {
-                                  // Navigasi ke halaman semua produk
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => SellerPage(
-                                        sellerId:
-                                            productData.sellerId.toString(),
-                                      ),
-                                    ),
-                                  );
-                                },
-                                child: Text(
-                                  seller?.namaToko! ?? productData.sellerName!,
-                                  style: const TextStyle(
-                                    color: Colors.grey,
-                                    fontSize: 14,
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(width: 4),
-                              const Icon(
-                                Icons.verified,
-                                color: Colors.blue,
-                                size: 14,
-                              )
-                            ],
-                          ),
-                          const SizedBox(height: 4),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Align(
-                                alignment: Alignment.centerLeft,
-                                child: Text(
-                                  formattedPrice,
-                                  style: const TextStyle(
-                                    color: Colors.black,
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ),
-                              Text('${productData.totalUnitsSold} terjual')
-                            ],
                           ),
                         ],
                       ),
                     ),
-                  ),
-                ],
+                    // Detail
+                    Expanded(
+                      child: Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Flexible(
+                              child: Text(
+                                '${productData.name}',
+                                style: const TextStyle(
+                                  color: Colors.black,
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                                overflow: TextOverflow.ellipsis,
+                                maxLines: 2,
+                              ),
+                            ),
+                            const SizedBox(height: 2),
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: GestureDetector(
+                                    onTap: () {
+                                      // Navigasi ke halaman semua produk
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) => SellerPage(
+                                            sellerId:
+                                                productData.sellerId.toString(),
+                                          ),
+                                        ),
+                                      );
+                                    },
+                                    child: Text(
+                                      seller?.namaToko! ??
+                                          productData.sellerName!,
+                                      style: const TextStyle(
+                                        color: Colors.grey,
+                                        fontSize: 12,
+                                      ),
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: 2),
+                                const Icon(
+                                  Icons.verified,
+                                  color: Colors.blue,
+                                  size: 12,
+                                )
+                              ],
+                            ),
+                            const SizedBox(height: 2),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Flexible(
+                                  child: Text(
+                                    formattedPrice,
+                                    style: const TextStyle(
+                                      color: Colors.black,
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                                Text(
+                                  '${productData.totalUnitsSold} terjual',
+                                  style: const TextStyle(fontSize: 10),
+                                )
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            ),
-          );
+            );
+          } else {
+            return Container();
+          }
         },
       ),
     );

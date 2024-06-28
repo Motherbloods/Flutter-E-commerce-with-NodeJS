@@ -1,4 +1,5 @@
 import 'package:ecommerce/models/product.dart';
+import 'package:ecommerce/ui/cart_checkout/keranjang_page.dart';
 import 'package:ecommerce/utils/blade/navbar_page.dart';
 import 'package:ecommerce/utils/api/get_recomen.dart';
 import 'package:ecommerce/utils/blade/product_grid.dart';
@@ -82,11 +83,15 @@ class _HomePageState extends State<HomePage> {
                 color: Colors.blueAccent,
               ),
             ),
-            onTap: () {},
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => KeranjangPage()),
+              );
+            },
           )
         ],
       ),
-      bottomNavigationBar: NavbarPage(selectedIndex: _selectedIndex),
       body: FutureBuilder(
         future: getProducts(widget.token!),
         builder: (BuildContext context, AsyncSnapshot snapshot) {

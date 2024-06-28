@@ -1,6 +1,7 @@
 class Seller {
   final String? id;
   final String? namaToko;
+  final String? fullName;
   final String? email;
   final int? noHP;
   final List<String>? kategoriPenjualanBrg;
@@ -10,6 +11,7 @@ class Seller {
 
   Seller({
     this.id,
+    this.fullName,
     this.namaToko,
     this.email,
     this.noHP,
@@ -21,16 +23,17 @@ class Seller {
 
   factory Seller.fromJson(Map<String, dynamic> json) {
     return Seller(
-      id: json['_id'],
-      namaToko: json['namaToko'],
-      email: json['email'],
-      noHP: json['noHP'],
-      kategoriPenjualanBrg: (json['kategoriPenjualanBrg'] as List<dynamic>)
-          .map((e) => e as String)
-          .toList(),
-      alamatToko: json['alamatToko'],
-      totalProductSalesLastWeek: json['totalProductSalesLastWeek'],
-      totalUnitsSold: json['totalUnitsSold'],
+      id: json['_id'] as String?,
+      fullName: json['fullName'] as String?,
+      namaToko: json['namaToko'] as String?,
+      email: json['email'] as String?,
+      noHP: json['noHP'] != null ? int.tryParse(json['noHP'].toString()) : null,
+      kategoriPenjualanBrg: json['kategoriPenjualanBrg'] != null
+          ? (json['kategoriPenjualanBrg'] as List<dynamic>).cast<String>()
+          : null,
+      alamatToko: json['alamatToko'] as String?,
+      totalProductSalesLastWeek: json['totalProductSalesLastWeek'] as int?,
+      totalUnitsSold: json['totalUnitsSold'] as int?,
     );
   }
 }

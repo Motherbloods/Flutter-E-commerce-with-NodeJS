@@ -1,4 +1,3 @@
-import 'package:ecommerce/models/searchHistory.dart';
 import 'package:ecommerce/models/searchSuggest.dart';
 import 'package:ecommerce/ui/produk&seller/produksearch.dart';
 import 'package:ecommerce/utils/blade/search_helper.dart';

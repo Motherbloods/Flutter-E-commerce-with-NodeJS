@@ -1,6 +1,7 @@
 import 'package:ecommerce/models/ulasan.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:intl/intl.dart';
 
 class Reviews extends StatefulWidget {
   final List<Ulasan>? reviews;
@@ -14,7 +15,7 @@ class Reviews extends StatefulWidget {
 class _ReviewsState extends State<Reviews> {
   @override
   Widget build(BuildContext context) {
-    return widget.reviews!.isEmpty
+    return widget.reviews!.isEmpty || widget.reviews == null
         ? Center(child: Text('Belum ada Ulasan untuk produk ini!'))
         : Column(children: [
             ListView.builder(
@@ -26,6 +27,8 @@ class _ReviewsState extends State<Reviews> {
               itemBuilder: (context, index) {
                 final review = widget.reviews![index];
                 final url = dotenv.env['URL'] ?? '';
+                final DateFormat formatter = DateFormat('dd-MM-yyyy HH:mm');
+                final String formattedDate = formatter.format(review.date!);
                 // return Row(
                 //   crossAxisAlignment: CrossAxisAlignment.start,
                 //   children: [
@@ -74,7 +77,7 @@ class _ReviewsState extends State<Reviews> {
                             for (String pictureUrl in review.picture!)
                               ClipOval(
                                 child: Image.network(
-                                  '$url$pictureUrl',
+                                  pictureUrl,
                                   width: 50,
                                   height: 50,
                                   fit: BoxFit.cover,
@@ -89,7 +92,7 @@ class _ReviewsState extends State<Reviews> {
                                   style: TextStyle(fontWeight: FontWeight.bold),
                                 ),
                                 Text(
-                                  '8 Juni 2024',
+                                  formattedDate,
                                   style: TextStyle(color: Colors.grey),
                                 )
                               ],

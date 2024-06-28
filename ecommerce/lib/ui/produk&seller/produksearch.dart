@@ -17,6 +17,10 @@ class ProdukSearch extends StatefulWidget {
 }
 
 class _ProdukSearchState extends State<ProdukSearch> {
+  Map<String, dynamic>? userData;
+  bool isLoading = true;
+  String errorMessage = '';
+  String kabupaten = '';
   Future<List<Product>> _getProductsSearch() async {
     final url = dotenv.env['URL'] ?? '';
     String api =
@@ -29,6 +33,46 @@ class _ProdukSearchState extends State<ProdukSearch> {
       products.add(Product.fromJson(item));
     }
     return products;
+  }
+
+  Future<void> getUser() async {
+    final url = dotenv.env['URL'] ?? '';
+    String api = '$url/api/user?id=${widget.isUser}';
+
+    try {
+      final response = await http.get(Uri.parse(api));
+      if (response.statusCode == 200) {
+        setState(() {
+          userData = jsonDecode(response.body);
+          isLoading = false;
+          kabupaten = userData?['alamat'][1]['kabupatenId'];
+        });
+
+        if (kabupaten != null) {
+          var api_key = dotenv.env['API_KEY'] ?? '';
+          var url2 =
+              'https://api.binderbyte.com/v1/cost?api_key=$api_key&courier=jne,sicepat,anteraja,lion,sap,pos,ide&origin=$kabupaten&destination=jakarta&weight=1&volume=100x100x100';
+          final response2 = await http.get(Uri.parse(url2));
+
+          if (response2.statusCode == 200) {
+          } else {
+            print('Failed to fetch cost data: ${response2.reasonPhrase}');
+          }
+        } else {
+          print('kabupaten is null');
+        }
+      } else {
+        setState(() {
+          errorMessage = 'Failed to load user data: ${response.reasonPhrase}';
+          isLoading = false;
+        });
+      }
+    } catch (e) {
+      setState(() {
+        errorMessage = 'An error occurred: $e';
+        isLoading = false;
+      });
+    }
   }
 
   @override
