@@ -1,10 +1,12 @@
-import 'package:ecommerce/ui/authpage/login.dart';
-import 'package:ecommerce/ui/homepage/isipulsa_page.dart';
-import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 import 'dart:convert';
+
+import 'package:ecommerce/ui/user/form_data.dart';
+import 'package:ecommerce/utils/api/register.dart';
+import 'package:flutter/material.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'dart:async';
+
+import 'package:shared_preferences/shared_preferences.dart';
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
@@ -31,54 +33,41 @@ class _RegisterPageState extends State<RegisterPage> {
       _isLoading = true;
       _message = '';
     });
-
+    if (email == null || password == null || confirmPassword == null) {
+      setState(() {
+        _message = 'Please fill all fields';
+        _isLoading = false;
+      });
+      return;
+    }
     try {
-      String url = 'http://192.168.128.30:8000/api/register';
-      final response = await http.post(
-        (Uri.parse(url)),
-        headers: <String, String>{
-          'Content-Type': 'application/json',
-        },
-        body: jsonEncode(<String, dynamic>{
-          'email': email,
-          'password': password,
-          'confirmPassword': confirmPassword,
-        }),
-      );
-      if (response.statusCode == 201) {
-        setState(() {
-          _message = 'Registration successful!';
-          _isComplete = true;
-        });
-        // Show success message for 3 seconds
-        Timer(Duration(seconds: 1), () {
-          setState(() {
-            _message = '';
-            _isComplete = false;
-          });
-          Navigator.push(
-              context, MaterialPageRoute(builder: (context) => LoginPage()));
-        });
-      } else {
-        setState(() {
-          _message = response.body;
-          _isComplete = true;
-        });
+      String result =
+          await registerUser(email!, password!, confirmPassword!, false, '');
+      final response = jsonDecode(result);
 
-        Timer(Duration(seconds: 1), () {
-          setState(() {
-            _message = '';
-            _isComplete = false;
-          });
-        });
-      }
-    } catch (e) {
-      print('Error: $e');
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      await prefs.setString('userId', response['id']);
 
+      setState(() {
+        _message = response['detail'];
+        _isComplete = true;
+      });
+      // Show success message for 3 seconds
       Timer(Duration(seconds: 1), () {
         setState(() {
           _message = '';
+          _isComplete = false;
         });
+        if (response['status'] == 201) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => FormDataUser()),
+          );
+        }
+      });
+    } catch (e) {
+      setState(() {
+        _message = 'An error occurred: $e';
       });
     } finally {
       setState(() {
@@ -91,7 +80,7 @@ class _RegisterPageState extends State<RegisterPage> {
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
-          title: Text("Register"),
+          title: Text('Register User'),
         ),
         body: Padding(
           padding: EdgeInsets.all(16),
@@ -150,6 +139,7 @@ class _RegisterPageState extends State<RegisterPage> {
 
   Widget _textBoxEmail() {
     return TextFormField(
+      key: Key('emailField'),
       decoration: InputDecoration(
         labelText: 'Email',
         floatingLabelBehavior: FloatingLabelBehavior.always,
@@ -169,6 +159,7 @@ class _RegisterPageState extends State<RegisterPage> {
 
   Widget _textBoxPassword() {
     return TextFormField(
+      key: Key('passField'),
       decoration: InputDecoration(
           labelText: 'Password',
           floatingLabelBehavior: FloatingLabelBehavior.always),
@@ -187,6 +178,7 @@ class _RegisterPageState extends State<RegisterPage> {
 
   Widget _textBoxConfirmPassword() {
     return TextFormField(
+      key: Key('confPassField'),
       decoration: InputDecoration(
           labelText: 'Email',
           floatingLabelBehavior: FloatingLabelBehavior.always),
@@ -209,6 +201,7 @@ class _RegisterPageState extends State<RegisterPage> {
       child: FractionallySizedBox(
         widthFactor: 0.5,
         child: ElevatedButton(
+          key: Key('button'),
           onPressed: () {
             if (_formKey.currentState!.validate()) {
               _formKey.currentState!.save();

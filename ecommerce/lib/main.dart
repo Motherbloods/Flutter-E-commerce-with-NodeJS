@@ -1,13 +1,21 @@
-import 'package:ecommerce/ui/homepage/home_page.dart';
+import 'package:ecommerce/ui/conversation_provider.dart';
 import 'package:ecommerce/ui/homepage/isipulsa_page.dart';
-import 'package:ecommerce/ui/homepage/search_page.dart';
-// import 'package:ecommerce/login_page.dart';
+import 'package:ecommerce/ui/cart_checkout/keranjang_page.dart';
 import 'package:ecommerce/ui/authpage/register.dart';
 import 'package:ecommerce/ui/authpage/login.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:provider/provider.dart';
 
-void main() {
-  runApp(const MyApp());
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized(); // Tambahkan ini
+  await dotenv.load(fileName: 'assets/.env');
+  runApp(
+    ChangeNotifierProvider(
+      create: (context) => ConversationProvider(),
+      child: MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
@@ -22,8 +30,9 @@ class MyApp extends StatelessWidget {
       routes: {
         '/': (context) => LoginPage(),
         '/register': (context) => RegisterPage(),
-        '/searchpage': (context) => SearchPage(),
-        '/Isi_Pulsa': (context) => IsipulsaPage()
+        '/Isi_Pulsa': (context) => IsipulsaPage(),
+        // '/produkdetail': (context) => ProdukDetail(),
+        '/keranjang': (context) => KeranjangPage(),
       },
     );
   }

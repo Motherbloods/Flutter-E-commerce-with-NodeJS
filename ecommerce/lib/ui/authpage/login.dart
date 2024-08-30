@@ -1,11 +1,13 @@
-import 'package:ecommerce/ui/homepage/home_page.dart';
+import 'package:ecommerce/ui/authpage/login_seller.dart';
+import 'package:ecommerce/ui/main_screen.dart';
+import 'package:ecommerce/utils/api/login.dart';
+
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'dart:async';
 import 'package:ecommerce/ui/authpage/register.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -31,20 +33,15 @@ class _LoginPageState extends State<LoginPage> {
     });
 
     try {
-      String url = 'http://192.168.128.30:8000/api/login';
-      final response = await http.post(
-        (Uri.parse(url)),
-        headers: <String, String>{
-          'Content-Type': 'application/json',
-        },
-        body: jsonEncode(<String, dynamic>{
-          'email': email,
-          'password': password,
-        }),
-      );
-      if (response.statusCode == 200) {
-        final responseData = jsonDecode(response.body);
-        final token = responseData['token'];
+      final result = await loginUser(email!, password!, false);
+
+      if (result['success']) {
+        final token = result['token'];
+        final userId = result['userId'];
+
+        SharedPreferences prefs = await SharedPreferences.getInstance();
+        await prefs.setString('userId', userId);
+
         _message = 'Login successful';
 
         Timer(Duration(milliseconds: 15), () {
@@ -54,30 +51,21 @@ class _LoginPageState extends State<LoginPage> {
           Navigator.push(
               context,
               MaterialPageRoute(
-                  builder: (context) => HomePage(
+                  builder: (context) => MainScreen(
                         token: token,
                       )));
         });
       } else {
         setState(() {
-          _message = 'Login failed';
+          _message = 'Email atau Password Salah';
         });
-        Timer(Duration(seconds: 1), () {
+
+        Timer(Duration(seconds: 3), () {
           setState(() {
             _message = '';
           });
         });
       }
-    } catch (e) {
-      print('Error: $e');
-      setState(() {
-        _message = 'An error occurred. Please check your internet connection.';
-      });
-      Timer(Duration(seconds: 1), () {
-        setState(() {
-          _message = '';
-        });
-      });
     } finally {
       setState(() {
         _isLoading = false;
@@ -89,7 +77,7 @@ class _LoginPageState extends State<LoginPage> {
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
-          title: Text('Login'),
+          title: Text('Login User'),
         ),
         body: Padding(
           padding: EdgeInsets.all(16),
@@ -148,6 +136,7 @@ class _LoginPageState extends State<LoginPage> {
 
   Widget _textBoxEmail() {
     return TextFormField(
+      key: Key('emailField'),
       decoration: InputDecoration(
         labelText: 'Email',
         floatingLabelBehavior: FloatingLabelBehavior.always,
@@ -167,30 +156,57 @@ class _LoginPageState extends State<LoginPage> {
 
   Widget _registerRedirect() {
     return Center(
-      child: RichText(
-        text: TextSpan(
-          text: 'Belum Punya Akun? ',
-          style: TextStyle(color: Colors.black),
-          children: <TextSpan>[
-            TextSpan(
-                text: 'Register',
-                style: TextStyle(
-                    color: Colors.blue, decoration: TextDecoration.underline),
-                recognizer: TapGestureRecognizer()
-                  ..onTap = () {
-                    Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => RegisterPage()));
-                  }),
-          ],
-        ),
+      child: Column(
+        children: [
+          RichText(
+            key: Key('registerRichText'),
+            text: TextSpan(
+              text: 'Belum Punya Akun? ',
+              style: TextStyle(color: Colors.black),
+              children: <TextSpan>[
+                TextSpan(
+                    text: 'Register',
+                    style: TextStyle(
+                        color: Colors.blue,
+                        decoration: TextDecoration.underline),
+                    recognizer: TapGestureRecognizer()
+                      ..onTap = () {
+                        Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => RegisterPage()));
+                      }),
+              ],
+            ),
+          ),
+          RichText(
+            text: TextSpan(
+              text: 'Login sebagai seller? ',
+              style: TextStyle(color: Colors.black),
+              children: <TextSpan>[
+                TextSpan(
+                    text: 'Login',
+                    style: TextStyle(
+                        color: Colors.blue,
+                        decoration: TextDecoration.underline),
+                    recognizer: TapGestureRecognizer()
+                      ..onTap = () {
+                        Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => LoginPageSeller()));
+                      }),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
 
   Widget _textBoxPassword() {
     return TextFormField(
+      key: Key('passField'),
       decoration: InputDecoration(
           labelText: 'Email',
           floatingLabelBehavior: FloatingLabelBehavior.always),
@@ -213,6 +229,7 @@ class _LoginPageState extends State<LoginPage> {
       child: FractionallySizedBox(
         widthFactor: 0.5,
         child: ElevatedButton(
+          key: Key('button'),
           onPressed: () {
             if (_formKey.currentState!.validate()) {
               _formKey.currentState!.save();

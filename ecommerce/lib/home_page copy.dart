@@ -1,10 +1,13 @@
 import 'package:ecommerce/models/product.dart';
+import 'package:ecommerce/ui/cart_checkout/keranjang_page.dart';
+import 'package:ecommerce/utils/blade/navbar_page.dart';
+import 'package:ecommerce/utils/api/get_recomen.dart';
+import 'package:ecommerce/utils/blade/product_grid.dart';
 import 'package:ecommerce/ui/homepage/product_recomen.dart';
+import 'package:ecommerce/ui/produk&seller/search_page.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
-import 'package:intl/intl.dart';
 
 class HomePage extends StatefulWidget {
   final String? token;
@@ -22,24 +25,6 @@ class _HomePageState extends State<HomePage> {
     Icons.menu,
   ];
 
-  Future<List<Product>> _getProducts() async {
-    String url = 'http://192.168.128.30:8000/api/home';
-
-    var data = await http.get(
-      Uri.parse(url),
-      headers: <String, String>{
-        'Authorization': 'Bearer ' + widget.token!,
-        'Content-Type': 'application/json',
-      },
-    );
-    var jsonData = json.decode(data.body);
-    List<Product> products = [];
-    for (var item in jsonData) {
-      products.add(Product.fromJson(item));
-    }
-    return products;
-  }
-
   List<String> myIconNames = [
     'Isi Pulsa',
     'Isi Token Listrik',
@@ -52,6 +37,7 @@ class _HomePageState extends State<HomePage> {
     Navigator.pushNamed(context, '/$routeName');
   }
 
+  int _selectedIndex = 0;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -61,7 +47,10 @@ class _HomePageState extends State<HomePage> {
         elevation: 0,
         title: InkWell(
           onTap: () {
-            Navigator.pushNamed(context, '/searchpage');
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => SearchPage()),
+            );
           },
           child: Container(
             height: 35,
@@ -94,25 +83,17 @@ class _HomePageState extends State<HomePage> {
                 color: Colors.blueAccent,
               ),
             ),
-            onTap: () {},
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => KeranjangPage()),
+              );
+            },
           )
         ],
       ),
-      bottomNavigationBar: NavigationBar(
-        height: 60,
-        backgroundColor: const Color.fromARGB(255, 255, 255, 255),
-        elevation: 0,
-        selectedIndex: 0,
-        destinations: const [
-          NavigationDestination(icon: Icon(Icons.home), label: 'Home'),
-          NavigationDestination(
-              icon: Icon(Icons.notifications), label: 'Notifikasi'),
-          NavigationDestination(
-              icon: Icon(Icons.account_circle), label: 'Profil'),
-        ],
-      ),
       body: FutureBuilder(
-        future: _getProducts(),
+        future: getProducts(widget.token!),
         builder: (BuildContext context, AsyncSnapshot snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return Center(
@@ -127,20 +108,6 @@ class _HomePageState extends State<HomePage> {
               child: Text('No Products available'),
             );
           } else {
-            // List<Product> products = snapshot.data!;
-            // print(products);
-            // return ListView.builder(
-            //   itemCount: products.length,
-            //   itemBuilder: (context, index) {
-            //     Product product = products[index];
-            //     String categories =
-            //         product.category?.join(', ') ?? 'No categories';
-            //     return ListTile(
-            //       title: Text('Product: ${categories}'),
-            //       subtitle: Text('ID: ${product.id}, Price: ${product.price}'),
-            //     );
-            //   },
-            // );
             List<Product> products = snapshot.data!;
             return ListView.builder(
                 itemCount: 1,
@@ -241,7 +208,9 @@ class _HomePageState extends State<HomePage> {
                                           context,
                                           MaterialPageRoute(
                                               builder: (context) =>
-                                                  AllProdukRecomendations()),
+                                                  AllProdukRecomendations(
+                                                    token: widget.token,
+                                                  )),
                                         );
                                       },
                                       child: Text(
@@ -255,136 +224,7 @@ class _HomePageState extends State<HomePage> {
                                     ),
                                   ],
                                 ),
-                                GridView.builder(
-                                    itemCount: 4,
-                                    shrinkWrap: true,
-                                    padding: EdgeInsets.zero,
-                                    physics:
-                                        const NeverScrollableScrollPhysics(),
-                                    gridDelegate:
-                                        const SliverGridDelegateWithFixedCrossAxisCount(
-                                      crossAxisCount: 2,
-                                      mainAxisSpacing: 16,
-                                      crossAxisSpacing: 16,
-                                      mainAxisExtent: 288,
-                                    ),
-                                    itemBuilder: (context, index) {
-                                      Product product = products[index];
-                                      String formatedPrice =
-                                          NumberFormat.currency(
-                                                  locale: 'id_ID',
-                                                  decimalDigits: 0,
-                                                  symbol: 'Rp ')
-                                              .format(product.price);
-                                      return GestureDetector(
-                                        onTap: () {},
-                                        child: Container(
-                                          width: 180,
-                                          padding: const EdgeInsets.all(1),
-                                          decoration: BoxDecoration(
-                                              boxShadow: [
-                                                BoxShadow(
-                                                  color: Colors.grey
-                                                      .withOpacity(0.1),
-                                                  blurRadius: 50,
-                                                  spreadRadius: 7,
-                                                  offset: const Offset(0, 2),
-                                                )
-                                              ],
-                                              borderRadius:
-                                                  BorderRadius.circular(16),
-                                              color: Colors.white),
-                                          child: Column(
-                                            children: [
-                                              //gambar
-                                              Container(
-                                                height: 180,
-                                                padding:
-                                                    const EdgeInsets.all(8.0),
-                                                color: Colors.white,
-                                                child: Stack(
-                                                  children: [
-                                                    Image.network(
-                                                        'https://picsum.photos/id/1/600/700'),
-                                                    Positioned(
-                                                      top: 8,
-                                                      child: Container(
-                                                        decoration: BoxDecoration(
-                                                            borderRadius:
-                                                                BorderRadius
-                                                                    .circular(
-                                                                        8),
-                                                            color:
-                                                                Colors.amber),
-                                                        padding:
-                                                            const EdgeInsets
-                                                                .symmetric(
-                                                                horizontal: 8,
-                                                                vertical: 4),
-                                                        child: const Text(
-                                                          '25%',
-                                                          style: TextStyle(
-                                                              color:
-                                                                  Colors.black),
-                                                        ),
-                                                      ),
-                                                    ),
-                                                  ],
-                                                ),
-                                              ),
-                                              //detail
-                                              Padding(
-                                                padding: EdgeInsets.all(8.0),
-                                                child: Column(
-                                                  crossAxisAlignment:
-                                                      CrossAxisAlignment.start,
-                                                  children: [
-                                                    Text(
-                                                      '${product.name}',
-                                                      style: TextStyle(
-                                                        color: Colors.black,
-                                                        fontSize: 16,
-                                                        fontWeight:
-                                                            FontWeight.bold,
-                                                      ),
-                                                    ),
-                                                    Row(
-                                                      children: [
-                                                        Text(
-                                                          '${product.sellerName}',
-                                                          style: TextStyle(
-                                                              color:
-                                                                  Colors.grey,
-                                                              fontSize: 14),
-                                                        ),
-                                                        SizedBox(
-                                                          width: 4,
-                                                        ),
-                                                        Icon(
-                                                          Icons.verified,
-                                                          color: Colors.blue,
-                                                          size: 14,
-                                                        )
-                                                      ],
-                                                    ),
-                                                    SizedBox(height: 4),
-                                                    Text(
-                                                      '${formatedPrice}',
-                                                      style: TextStyle(
-                                                        color: Colors.black,
-                                                        fontSize: 16,
-                                                        fontWeight:
-                                                            FontWeight.bold,
-                                                      ),
-                                                    ),
-                                                  ],
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                      );
-                                    }),
+                                ProductGrid(products: products)
                               ],
                             ),
                           ),

@@ -1,19 +1,21 @@
-const express = require("express");
-const app = express();
-const cors = require("cors");
-const path = require("path");
-require("dotenv").config();
-
-const port = process.env.PORT;
-
-app.use(cors());
-app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
-app.use("/images", express.static(path.join(__dirname, "images")));
+const app = require("./utills/config");
+const port = process.env.PORT || 8000;
+const http = require("http");
+const configureSocket = require("./utills/socketConfig");
 
 require("./utills/db");
 const routes = require("./route/index.route");
 app.use(routes);
+
+const server = http.createServer(app);
+const io = configureSocket(server);
+
+// Make io accessible to our router
+app.set("io", io);
+
+server.listen(8080, () => {
+  console.log("Server and Socket.IO listening on port " + 8080);
+});
 
 app.listen(port, () => {
   console.log("Listening on port " + port);
